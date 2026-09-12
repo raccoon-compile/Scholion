@@ -212,15 +212,17 @@ Normal qualification includes Ruff, strict mypy, Vulture, Radon, branch coverage
 
 ## Where the project goes next
 
-Research/search, Processing, explicit embedded-track transcription, desktop comprehension/themes, transcript/speaker tools, verified native playback, contextual guidance, desktop lifecycle/retention controls, architecture consolidation, product identity, application-side update/model-trust mechanics, package lifecycle/provenance, and managed packaged FFmpeg/FFprobe custody are complete MVP foundations.
+Research/search, Processing, explicit embedded-track transcription, desktop comprehension/themes, transcript/speaker tools, verified native playback, contextual guidance, desktop lifecycle/retention controls, architecture consolidation, product identity, application-side update/model-trust mechanics, package lifecycle/provenance, managed packaged FFmpeg/FFprobe custody, strict native Ed25519 verification, and deterministic production trust-input custody are complete MVP foundations.
 
 The remaining first-release sequence is intentionally narrow:
 
-1. **Production trust inputs:** review and bundle the real faster-whisper model-trust catalog, provision the approved public update-key set, and exact-pin/wire the native Ed25519 verifier;
-2. **OS signing/notarization:** sign Windows package bytes and sign/notarize macOS package bytes after production trust inputs are stable;
-3. **Native update activation:** execute only an already trusted, OS-signed staged candidate while keeping staging distinct from installation until this boundary is qualified;
-4. **Representative release qualification:** prove real packaged CPU-only/accelerator/Apple/Windows behavior, offline/update/repair/lifecycle cases, accessibility/device behavior, and #114's remaining native task-transport evidence; and
-5. **MVP release:** publish the final candidate with checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same bytes.
+1. **Real production trust inputs and qualification (#177, #178, #168):** perform the external release-key ceremony and review the real faster-whisper `tiny`, `small`, and `medium` immutable snapshots, then bundle those reviewed public inputs through the already-merged native verification/custody path and qualify the production-shaped candidate end to end;
+2. **OS signing/notarization (#173):** sign Windows package bytes and sign/notarize macOS package bytes after production trust inputs are stable;
+3. **Native update activation (#174):** execute only an already trusted, OS-signed staged candidate while keeping staging distinct from installation until this boundary is qualified;
+4. **Representative release qualification (#114):** prove real packaged CPU-only/accelerator/Apple/Windows behavior, offline/update/repair/lifecycle cases, accessibility/device behavior, and the remaining native task-transport evidence; and
+5. **MVP release (#175):** publish the final candidate with checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same bytes.
+
+The native verifier itself is no longer a future task: #170 exact-pinned and wired strict Ed25519 verification, #172 added deterministic trust-input custody, and #180 added public-key catalog/ceremony support. What remains in #168 is the real reviewed production material and proof using it.
 
 Official Linux binary packaging remains blocked by #135. Backup/restore + research portability, packaged semantic-model custody, and freeform research notebook/memo features remain valuable **post-MVP** work. They are no longer being treated as reasons to postpone the first useful packaged Scholion build.
 
