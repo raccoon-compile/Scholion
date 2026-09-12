@@ -55,7 +55,7 @@ See **[Signed update and model trust channel](security/update-model-trust.md)** 
 
 Scholion's update UI is manual. It distinguishes Off, Never checked, Checking, Up to date, Trusted update available, Staging/Staged, and bounded failure. Signed metadata must pass key/signature, publication/expiry, stable-channel, platform, anti-rollback, and equivocation checks before it can authorize an artifact. A downloaded artifact must then match the signed byte count and SHA-256 exactly.
 
-A staged package is **not installed**. Production public verification material, native verification, Windows/macOS signing/notarization, and native activation remain separate release gates.
+A staged package is **not installed**. Strict native Ed25519 verification, deterministic public trust-input custody, and repository-side public-key catalog/ceremony support are implemented. The real production release key/public catalog, real reviewed model catalog, production-shaped qualification, Windows/macOS signing/notarization, and native activation remain separate release gates.
 
 An update check is network activity, but it is not behavioral telemetry. GitHub/CDN can observe ordinary connection metadata such as IP address and request time. Scholion does not send an installation ID, corpus/research content, hardware/model inventory, or product-behavior data.
 
@@ -76,7 +76,9 @@ An update check is network activity, but it is not behavioral telemetry. GitHub/
 - **[Give the anonymous speakers names](speaker-names.md)** for human-authored display labels and generation semantics.
 - **[Semantic search, without the mystery box](semantic-search.md)** for local semantic/hybrid retrieval.
 - **[Signed update and model trust channel](security/update-model-trust.md)** for implemented supply-chain mechanics and privacy boundaries.
-- **[Production trust inputs](security/production-trust-inputs.md)** for the frozen native verifier/key-rotation decision and real-model review procedure.
+- **[Production trust inputs](security/production-trust-inputs.md)** for the implemented native verifier/custody contract plus the remaining real key/model provisioning and qualification sequence.
+- **[OS signing and notarization](security/os-signing-and-notarization.md)** for the separate platform trust layer and direct-distribution model.
+- **[Release-key ceremony](security/release-key-ceremony.md)** for the external private-key custody boundary and public catalog workflow.
 - **[Pre-release security hardening](security/release-hardening.md)** for what still qualifies as a release gate versus post-MVP hardening.
 - **[Desktop themes and accessibility](development/desktop-accessibility.md)** for the eight-skin semantic token system and contrast qualification.
 - **[Frontend testing strategy](development/frontend-testing.md)** for frontend/backend test ownership and mutation policy.
@@ -124,15 +126,15 @@ The architecture/redundancy audit remains closed after a post-#144 re-audit. The
 
 ## What comes next
 
-The Scholion identity migration, application-side update/model-trust mechanics, pre-packaging milestone #145, Windows/macOS package foundation, deterministic package lifecycle/provenance, and managed packaged FFmpeg/FFprobe custody are complete.
+The Scholion identity migration, application-side update/model-trust mechanics, pre-packaging milestone #145, Windows/macOS package foundation, deterministic package lifecycle/provenance, managed packaged FFmpeg/FFprobe custody, strict native Ed25519 verification, deterministic public trust-input custody, and public-key ceremony support are complete.
 
 The remaining first-release sequence is intentionally narrow:
 
-1. **Production trust inputs:** review and bundle the real faster-whisper model-trust catalog, provision the approved public update-key set, and wire the exact-pinned native Ed25519 verifier;
-2. **OS signing/notarization:** sign Windows package bytes and sign/notarize macOS package bytes once the production trust inputs are stable;
-3. **Native update activation:** execute only an already trusted, OS-signed staged candidate and keep staging distinct from installation until that proof exists;
-4. **Representative release qualification:** exercise real packaged CPU-only/accelerator/Apple/Windows behavior, offline/update/repair/lifecycle cases, accessibility/device behavior, and #114's remaining native task-transport evidence; and
-5. **MVP release:** publish the final candidate with checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same bytes.
+1. **Real production trust inputs and qualification (#177, #178, #168):** perform the external production release-key ceremony, review the real faster-whisper `tiny`, `small`, and `medium` immutable snapshots, bundle those approved public inputs through the existing custody path, and qualify the production-shaped candidate end to end;
+2. **OS signing/notarization (#173):** sign Windows package bytes and sign/notarize macOS package bytes once the production trust inputs are stable;
+3. **Native update activation (#174):** execute only an already trusted, OS-signed staged candidate and keep staging distinct from installation until that proof exists;
+4. **Representative release qualification (#114):** exercise real packaged CPU-only/accelerator/Apple/Windows behavior, offline/update/repair/lifecycle cases, accessibility/device behavior, and the remaining native task-transport evidence; and
+5. **MVP release (#175):** publish the final candidate with checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same bytes.
 
 Official Linux binary packaging remains blocked by #135. Backup/restore + selected research portability, packaged semantic custody, and broader research-native features remain useful **post-MVP** work rather than reasons to hold the first Windows/macOS release hostage.
 
