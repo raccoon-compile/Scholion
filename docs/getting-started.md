@@ -182,7 +182,7 @@ Current repository code supports:
 
 The first-release update endpoint is fixed by application policy. React cannot submit a URL, path, header, executable command, or installer argument. Metadata must pass signature, publication/expiry, stable-channel, platform, anti-rollback, and same-sequence equivocation checks. Staged bytes must match the signed size/SHA-256 exactly.
 
-A staged package is **not installed**. Production verifier/public-key bundling, native activation, and Windows/macOS signing/notarization belong to the later packaging milestone.
+A staged package is **not installed**. The strict native verifier and deterministic public trust-input bundling/custody machinery are implemented. What remains is the real production public key/catalog and model policy, production-shaped qualification with those inputs, native activation, and Windows/macOS signing/notarization.
 
 A manual update check is network activity. GitHub/CDN can observe ordinary connection metadata such as IP address and request time. Scholion sends no installation ID, recordings/transcripts/research content, hardware/model inventory, or behavioral telemetry.
 
@@ -214,10 +214,12 @@ See **[Semantic search](semantic-search.md)**.
 
 ## What comes next?
 
-Issue #145 is complete. The current milestone is Windows/macOS packaging plus exact-artifact Release Qualification. The sequence is:
+The application, packaging-preview, native verification, and deterministic public trust-input custody foundations are complete. The remaining first-release sequence is:
 
-1. finish the managed runtime/native dependency boundary, preview installers, production update keys/verifier, reviewed model catalog, signing/notarization, update activation, and first-run/repair/uninstall semantics; official Linux binary packaging remains blocked by #135;
-2. qualify the exact packages on representative machines, including #114's remaining CPU-only/accelerator task-transport evidence; and
-3. release the MVP.
+1. complete #177's external production release-key ceremony and #178's live review of the first-release faster-whisper `tiny`, `small`, and `medium` snapshots, then finish #168 by qualifying those real public inputs in the production-shaped package;
+2. complete #173 Windows code signing and macOS Developer ID signing/notarization;
+3. complete #174 native activation of already trusted, OS-signed staged updates;
+4. complete #114 representative-device qualification, including CPU-only/accelerator task transport and offline/repair/update behavior; and
+5. complete #175 by publishing the final qualified MVP artifacts and evidence.
 
-Backup/restore + research portability, packaged semantic custody, and broader research-native features are **post-MVP** work. For the detailed sequence, see **[ROADMAP.md](../ROADMAP.md)**.
+Official Linux binary packaging remains separately blocked by #135. Backup/restore + research portability, packaged semantic custody, and broader research-native features are **post-MVP** work. For the detailed sequence, see **[ROADMAP.md](../ROADMAP.md)**.
