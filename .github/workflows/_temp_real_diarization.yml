@@ -1,0 +1,58 @@
+name: Temporary real diarization qualification
+
+on:
+  push:
+    branches:
+      - test/diarization-real-model-183
+
+permissions:
+  contents: read
+
+jobs:
+  real-diarization:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      PYANNOTE_METRICS_ENABLED: "0"
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Check locked graph
+        run: uv lock --check
+
+      - name: Require gated-model authentication
+        shell: bash
+        run: test -n "$HF_TOKEN"
+
+      - name: Install diarization runtime
+        run: uv sync --locked --extra diarization
+
+      - name: Verify installed diarization runtime
+        run: uv run python -c "import importlib.metadata as m; print('lightning', m.version('lightning')); print('pyannote-audio', m.version('pyannote-audio'))"
+
+      - name: Fetch pinned two-speaker ground-truth fixture
+        run: >-
+          uv run python scripts/fetch_diarization_fixture.py
+          --output-dir "${{ runner.temp }}/diarization-fixture"
+
+      - name: Run real Community-1 inference twice against ground truth
+        run: >-
+          uv run python scripts/verify_diarization_acceptance.py
+          "${{ runner.temp }}/diarization-fixture/dev00.wav"
+          --reference-rttm "${{ runner.temp }}/diarization-fixture/debug.development.rttm"
+          --cache-dir "${{ runner.temp }}/pyannote-cache"
