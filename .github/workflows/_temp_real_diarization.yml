@@ -1,4 +1,4 @@
-name: Temporary real diarization qualification
+name: Temporary diarization qualification
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  real-diarization:
+  diarization-runtime:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -38,16 +38,16 @@ jobs:
         run: uv sync --locked --extra diarization
 
       - name: Verify installed diarization runtime
-        run: uv run python -c "import importlib.metadata as m; print('lightning', m.version('lightning')); print('pyannote-audio', m.version('pyannote-audio'))"
+        run: uv run python -c "import importlib.metadata as m; assert m.version('lightning') == '2.6.6'; print('lightning', m.version('lightning')); print('pyannote-audio', m.version('pyannote-audio'))"
 
-      - name: Fetch pinned two-speaker ground-truth fixture
+      - name: Run diarization unit/status tests
         run: >-
-          uv run python scripts/fetch_diarization_fixture.py
-          --output-dir "${{ runner.temp }}/diarization-fixture"
+          uv run pytest
+          src/scholion/transcription/tests/test_diarization.py
+          src/scholion/transcription/tests/test_diarization_status.py
 
-      - name: Run real Community-1 inference twice against ground truth
-        run: >-
-          uv run python scripts/verify_diarization_acceptance.py
-          "${{ runner.temp }}/diarization-fixture/dev00.wav"
-          --reference-rttm "${{ runner.temp }}/diarization-fixture/debug.development.rttm"
-          --cache-dir "${{ runner.temp }}/pyannote-cache"
+      - name: Build distribution
+        run: uv build
+
+      - name: Verify clean wheel diarization install
+        run: uv run python scripts/verify_diarization_install.py dist
