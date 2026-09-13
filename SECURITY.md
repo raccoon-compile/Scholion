@@ -341,18 +341,31 @@ coordinate that answers which embedded track was transcribed.
 Command result envelopes may include job/artifact paths because those are explicit
 command results.
 
-## Diarization security hold
+## Diarization dependency boundary
 
 Anonymous speaker diarization is optional. Scholion does not perform biometric identity
 or cross-recording speaker linking.
 
-The locked pyannote dependency graph currently includes Lightning 2.6.5, affected by
-CVE-2026-58659. Scholion blocks diarization before pyannote import or model acquisition
-until a compatible patched Lightning release is available. The dependency-audit
-exception is restricted to the exact advisory/version so dependency drift forces
-re-evaluation.
+The locked diarization graph now requires Lightning 2.6.6 or newer. Upstream Lightning
+2.6.6 ships the fixes for CVE-2026-58659 / PYSEC-2026-3624, which affected releases
+through 2.6.5. Scholion retains an independent runtime floor and refuses diarization
+before pyannote import/model acquisition when Lightning is older than 2.6.6 or its
+stable version cannot be established.
 
-Any current diarization model-download authorization is narrowly scoped to the optional
+PyPA's canonical advisory records Lightning 2.6.6 as the fixed version. GitHub's reviewed
+advisory copy currently contains a malformed `fixed: 2022.6.15`, causing OSV Scanner to
+flag the patched 2.6.6 package. `osv-scanner.toml` therefore carries a short-lived,
+exact-advisory exception for that metadata discrepancy while the independent Python
+dependency audit remains clean. The exception does not broaden the runtime version floor
+and must be removed when the upstream advisory record is corrected.
+
+The real pyannote/PyTorch dependency graph, deterministic diarization/status tests, and
+clean-wheel installation are qualified without loading the gated Community-1 model. Real
+two-speaker Community-1 acceptance remains credential-gated and requires authenticated
+Hugging Face model access; it must pass before Scholion claims operational real-model
+qualification.
+
+Any diarization model-download authorization is narrowly scoped to the optional
 diarization capability. It is not a general ASR network permission.
 
 ## Local file and workspace boundary

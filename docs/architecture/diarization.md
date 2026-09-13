@@ -36,32 +36,38 @@ uv run scholion transcribe meeting.wav --diarize --min-speakers 2 --max-speakers
 Exact and bounded speaker-count options are mutually exclusive. Speaker-count options
 are invalid without `--diarize`.
 
-## Current operational status: integrated, but security-held 🔐
+## Current operational status: patched runtime integrated; real-model acceptance pending 🔐
 
 The first adapter targets the open-source pyannote `community-1` pipeline.
 
-As of August 2026, pyannote 4.0.7 requires Lightning and the current lock resolves
-Lightning 2.6.5. That release is affected by CVE-2026-58659 / PYSEC-2026-3624, a
-checkpoint-loading remote-code-execution vulnerability.
+Scholion now locks Lightning 2.6.6 or newer for the diarization extra. Lightning 2.6.6
+shipped the upstream fixes for CVE-2026-58659 / PYSEC-2026-3624, the
+checkpoint-loading remote-code-execution vulnerability that previously held this feature
+closed. The runtime still fails closed before pyannote import or model acquisition when
+the installed Lightning version is older than 2.6.6 or cannot be proven stable.
 
-This is not an irrelevant transitive advisory. Pyannote subclasses
-`lightning.LightningModule` and loads pretrained checkpoints through Lightning, so the
-vulnerable path intersects the feature Scholion would actually execute.
+The locked Lightning 2.6.6 + pyannote 4.0.7 runtime has been installed from the clean
+lock graph, exercised through the deterministic diarization/status tests, built as a
+distribution, and reinstalled through the clean-wheel diarization lane.
 
-Scholion therefore **fails closed** before pyannote import or model acquisition when the
-installed Lightning safety cannot be established.
+One scanner-specific exception remains temporarily because GitHub's reviewed advisory
+copy currently records the malformed fixed version `2022.6.15`. PyPA's canonical
+advisory records `fixed: 2.6.6`, the advisory text says releases through 2.6.5 are
+affected, and Lightning 2.6.6 release notes document the fixes. The OSV exception is
+therefore bounded metadata-drift compensation, not permission to run an affected
+Lightning release, and expires so the repository must re-evaluate the upstream record.
 
-The dependency audit carries one narrow documented exception for that exact advisory
-while the runtime compensating control remains in place. Other advisories still fail the
-audit.
-
-Once a compatible patched Lightning release is available and qualified, both the audit
-exception and runtime hold should be removed.
+Real `community-1` inference is a separate qualification boundary. The existing
+two-speaker acceptance harness uses a pinned audio/RTTM fixture, runs inference twice,
+checks ground truth, and keeps telemetry disabled, but model acquisition requires
+authenticated Hugging Face access. Until that credential-gated acceptance passes,
+Scholion does not claim everyday operational qualification for diarization.
 
 So the current product description is deliberately precise:
 
-> **Diarization is integrated, tested at the application boundary, and security-gated;
-> it is not currently an operationally qualified everyday feature.**
+> **Diarization is integrated and the patched runtime is security-qualified at the
+> dependency/application boundary; real Community-1 two-speaker model acceptance remains
+> pending authenticated upstream access.**
 
 ## Privacy and model-acquisition boundary
 
@@ -268,9 +274,11 @@ The locked diarization dependency graph remains in normal/scheduled vulnerabilit
 auditing.
 
 A clean-wheel distribution lane imports the real pyannote/PyTorch runtime without
-executing the gated model. A dedicated real-model acceptance workflow exists but remains
-blocked by the dependency security gate; once unblocked, it is manual and
-credential-gated rather than ordinary PR CI.
+executing the gated model. The dependency security hold is lifted for locked Lightning
+2.6.6+, but the dedicated real-model acceptance workflow remains manual and
+credential-gated because Community-1 acquisition requires authenticated Hugging Face
+access. Passing dependency/runtime qualification is not substituted for that real-model
+proof.
 
 ## Current deliberate limits
 
