@@ -1,2 +1,10 @@
-# Scholion currently carries no OSV advisory exceptions.
-# Keep this explicit config file so future exceptions require a reviewed diff.
+# CVE-2026-58659 / GHSA-qqmf-gpg7-g8gw is fixed by Lightning 2.6.6.
+# PyPA's canonical advisory records `fixed: 2.6.6`, and the upstream 2.6.6 release
+# notes document the checkpoint-loading RCE fixes. GitHub's reviewed advisory copy
+# currently contains a malformed `fixed: 2022.6.15`, which makes OSV Scanner flag
+# the patched 2.6.6 release. Keep this exception short-lived and remove it as soon
+# as the GitHub/OSV record catches up; pip-audit must continue to pass independently.
+[[IgnoredVulns]]
+id = "GHSA-qqmf-gpg7-g8gw"
+ignoreUntil = 2026-09-20
+reason = "Scanner metadata drift: PyPA records CVE-2026-58659 fixed in Lightning 2.6.6 and upstream 2.6.6 ships the fixes, while GitHub's advisory copy currently has malformed fixed version 2022.6.15."
