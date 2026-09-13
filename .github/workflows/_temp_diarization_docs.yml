@@ -1,0 +1,55 @@
+name: Temporary diarization docs truth sync
+
+on:
+  push:
+    branches:
+      - security/restore-diarization-lightning-2.6.6
+
+permissions:
+  contents: write
+
+jobs:
+  truth-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: true
+
+      - name: Update diarization security truth
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          architecture = Path('docs/architecture/diarization.md')
+          text = architecture.read_text()
+          start = text.index('## Current operational status:')
+          end = text.index('## Privacy and model-acquisition boundary')
+          replacement = '''## Current operational status: patched runtime integrated; real-model acceptance pending 🔐\n\nThe first adapter targets the open-source pyannote `community-1` pipeline.\n\nScholion now locks Lightning 2.6.6 or newer for the diarization extra. Lightning 2.6.6\nshipped the upstream fixes for CVE-2026-58659 / PYSEC-2026-3624, the\ncheckpoint-loading remote-code-execution vulnerability that previously held this feature\nclosed. The runtime still fails closed before pyannote import or model acquisition when\nthe installed Lightning version is older than 2.6.6 or cannot be proven stable.\n\nThe locked Lightning 2.6.6 + pyannote 4.0.7 runtime has been installed from the clean\nlock graph, exercised through the deterministic diarization/status tests, built as a\ndistribution, and reinstalled through the clean-wheel diarization lane.\n\nOne scanner-specific exception remains temporarily because GitHub's reviewed advisory\ncopy currently records the malformed fixed version `2022.6.15`. PyPA's canonical\nadvisory records `fixed: 2.6.6`, the advisory text says releases through 2.6.5 are\naffected, and Lightning 2.6.6 release notes document the fixes. The OSV exception is\ntherefore bounded metadata-drift compensation, not permission to run an affected\nLightning release, and expires so the repository must re-evaluate the upstream record.\n\nReal `community-1` inference is a separate qualification boundary. The existing\ntwo-speaker acceptance harness uses a pinned audio/RTTM fixture, runs inference twice,\nchecks ground truth, and keeps telemetry disabled, but model acquisition requires\nauthenticated Hugging Face access. Until that credential-gated acceptance passes,\nScholion does not claim everyday operational qualification for diarization.\n\nSo the current product description is deliberately precise:\n\n> **Diarization is integrated and the patched runtime is security-qualified at the\n> dependency/application boundary; real Community-1 two-speaker model acceptance remains\n> pending authenticated upstream access.**\n\n'''
+          text = text[:start] + replacement + text[end:]
+          old = '''A clean-wheel distribution lane imports the real pyannote/PyTorch runtime without\nexecuting the gated model. A dedicated real-model acceptance workflow exists but remains\nblocked by the dependency security gate; once unblocked, it is manual and\ncredential-gated rather than ordinary PR CI.\n'''
+          new = '''A clean-wheel distribution lane imports the real pyannote/PyTorch runtime without\nexecuting the gated model. The dependency security hold is lifted for locked Lightning\n2.6.6+, but the dedicated real-model acceptance workflow remains manual and\ncredential-gated because Community-1 acquisition requires authenticated Hugging Face\naccess. Passing dependency/runtime qualification is not substituted for that real-model\nproof.\n'''
+          if old not in text:
+              raise SystemExit('architecture qualification paragraph changed unexpectedly')
+          architecture.write_text(text.replace(old, new))
+
+          security = Path('SECURITY.md')
+          text = security.read_text()
+          start = text.index('## Diarization security hold')
+          end = text.index('## Local file and workspace boundary')
+          replacement = '''## Diarization dependency boundary\n\nAnonymous speaker diarization is optional. Scholion does not perform biometric identity\nor cross-recording speaker linking.\n\nThe locked diarization graph now requires Lightning 2.6.6 or newer. Upstream Lightning\n2.6.6 ships the fixes for CVE-2026-58659 / PYSEC-2026-3624, which affected releases\nthrough 2.6.5. Scholion retains an independent runtime floor and refuses diarization\nbefore pyannote import/model acquisition when Lightning is older than 2.6.6 or its\nstable version cannot be established.\n\nPyPA's canonical advisory records Lightning 2.6.6 as the fixed version. GitHub's reviewed\nadvisory copy currently contains a malformed `fixed: 2022.6.15`, causing OSV Scanner to\nflag the patched 2.6.6 package. `osv-scanner.toml` therefore carries a short-lived,\nexact-advisory exception for that metadata discrepancy while the independent Python\ndependency audit remains clean. The exception does not broaden the runtime version floor\nand must be removed when the upstream advisory record is corrected.\n\nThe real pyannote/PyTorch dependency graph, deterministic diarization/status tests, and\nclean-wheel installation are qualified without loading the gated Community-1 model. Real\ntwo-speaker Community-1 acceptance remains credential-gated and requires authenticated\nHugging Face model access; it must pass before Scholion claims operational real-model\nqualification.\n\nAny diarization model-download authorization is narrowly scoped to the optional\ndiarization capability. It is not a general ASR network permission.\n\n'''
+          security.write_text(text[:start] + replacement + text[end:])
+          PY
+
+      - name: Remove temporary workflow and commit docs
+        shell: bash
+        run: |
+          git rm .github/workflows/_temp_diarization_docs.yml
+          git add SECURITY.md docs/architecture/diarization.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs: truth-sync patched diarization boundary"
+          git push
