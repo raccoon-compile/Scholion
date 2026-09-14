@@ -67,7 +67,7 @@ Choose **Processing**. The current control loop includes:
 - backend preflight before execution;
 - explicit embedded-audio-track confirmation when a source contains more than one audio stream;
 - optional deterministic enhancement;
-- optional anonymous diarization;
+- optional anonymous diarization with automatic, exact, or bounded speaker-count guidance;
 - derived publication intent;
 - supervised local start/cancel;
 - durable job progress/state;
@@ -80,7 +80,9 @@ Scholion now has two distinct model-trust layers. Provider/local custody records
 
 For a normal single-track recording, there is no track choice to make. If preflight finds several embedded audio tracks, Processing Center shows bounded source-declared metadata and keeps **Start local transcription** disabled until you choose one. Scholion then sends that exact index back to Python and re-runs preflight before enabling Start.
 
-Those source labels are clues, not Scholion recommendations. See **[Processing Center](architecture/processing-center.md)** and **[Audio tracks](audio-tracks.md)**.
+When **Label speakers automatically** is enabled, leave **How many speakers?** on **Let Scholion estimate** if you do not know. If you already know there are exactly two, six, or another number of participants, choose the exact-count option and provide that fact. If you only know roughly, provide a minimum and maximum. This removes an unnecessary counting problem from the diarizer, but it does not turn probabilistic speaker attribution into certainty. Difficult overlap, similar voices, noise, or poor microphones may still need human correction later.
+
+Those source labels and speaker-count hints are user intent, not Scholion identity claims. See **[Processing Center](architecture/processing-center.md)**, **[Anonymous speaker diarization](architecture/diarization.md)**, and **[Audio tracks](audio-tracks.md)**.
 
 ## 3. Process from the CLI when useful
 
@@ -103,6 +105,16 @@ scholion transcribe meeting.mkv --audio-stream 3
 ```
 
 An unavailable or non-audio index fails instead of silently falling back. The selected stream is preserved in canonical source provenance and restored on checkpoint resume.
+
+For anonymous speaker labeling, let Community-1 estimate the speaker count or supply knowledge you already have:
+
+```bash
+scholion transcribe interview.m4a --diarize
+scholion transcribe interview.m4a --diarize --speakers 2
+scholion transcribe focus-group.m4a --diarize --min-speakers 4 --max-speakers 7
+```
+
+Exact and bounded speaker-count guidance are alternatives. They constrain anonymous speaker grouping; they do not identify people by name.
 
 Publication views can be requested with:
 
@@ -214,7 +226,7 @@ See **[Semantic search](semantic-search.md)**.
 
 ## What comes next?
 
-The application, packaging-preview, native verification, and deterministic public trust-input custody foundations are complete. The remaining first-release sequence is:
+The application, packaging-preview, native verification, deterministic public trust-input custody, and real Community-1 diarization foundations are complete. The remaining first-release sequence is:
 
 1. complete #177's external production release-key ceremony and #178's live review of the first-release faster-whisper `tiny`, `small`, and `medium` snapshots, then finish #168 by qualifying those real public inputs in the production-shaped package;
 2. complete #173 Windows code signing and macOS Developer ID signing/notarization;
