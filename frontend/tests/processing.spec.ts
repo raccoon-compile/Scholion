@@ -131,6 +131,43 @@ test("speaker labeling is disabled when the backend places the capability on sec
   expect(accessibility.violations).toEqual([]);
 });
 
+test("speaker labeling accepts automatic, exact, and bounded speaker-count guidance", async ({ page }) => {
+  await openProcessing(page);
+  await page.getByRole("button", { name: "Choose recording" }).click();
+  await page.getByRole("button", { name: "Check recording" }).click();
+  await page.getByText("Advanced options").click();
+
+  const speakerLabeling = page.getByLabel("Label speakers automatically");
+  await speakerLabeling.check();
+
+  const speakerCount = page.getByLabel("How many speakers?");
+  await expect(speakerCount).toHaveValue("auto");
+  await expect(page.getByText(/telling Scholion can make speaker grouping easier/)).toBeVisible();
+
+  await speakerCount.selectOption("exact");
+  const exactCount = page.getByLabel("Exact speaker count");
+  await expect(exactCount).toHaveValue("2");
+  await exactCount.fill("6");
+  await expect(exactCount).toHaveValue("6");
+
+  await speakerCount.selectOption("range");
+  const minimum = page.getByLabel("Minimum speakers");
+  const maximum = page.getByLabel("Maximum speakers");
+  await expect(minimum).toHaveValue("2");
+  await expect(maximum).toHaveValue("6");
+  await minimum.fill("4");
+  await maximum.fill("7");
+  await expect(minimum).toHaveValue("4");
+  await expect(maximum).toHaveValue("7");
+
+  await speakerLabeling.uncheck();
+  await speakerLabeling.check();
+  await expect(page.getByLabel("How many speakers?")).toHaveValue("auto");
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
 test("interrupted work offers resume and a fresh retry as distinct actions", async ({ page }) => {
   await openProcessing(page);
 
