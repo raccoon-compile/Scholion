@@ -25,6 +25,7 @@ transcription = [
     "lingua-language-detector>=2,<3",
 ]
 diarization = [
+    "lightning>=2.6.6,<3",
     "pyannote-audio>=4,<5",
 ]
 

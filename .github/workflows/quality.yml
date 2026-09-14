@@ -228,19 +228,12 @@ jobs:
           --format requirements-txt
           --output-file ${{ runner.temp }}/scholion-runtime-requirements.txt
 
-      - name: Verify compensated Lightning advisory scope
-        shell: bash
-        run: >-
-          grep -Eq '^lightning==2\.6\.5([ ;]|$)'
-          "${{ runner.temp }}/scholion-runtime-requirements.txt"
-
       - name: Audit locked runtime dependencies
         run: >-
           uvx --from pip-audit==2.10.1 pip-audit
           --requirement ${{ runner.temp }}/scholion-runtime-requirements.txt
           --no-deps
           --disable-pip
-          --ignore-vuln PYSEC-2026-3624
           --progress-spinner off
 
   mermaid-docs:

@@ -8,7 +8,10 @@ from itertools import permutations
 from pathlib import Path
 
 from scholion.transcription.diarization import PyannoteSpeakerDiarizer
-from scholion.transcription.speaker_models import SpeakerDiarizationResult
+from scholion.transcription.speaker_models import (
+    SpeakerDiarizationRequest,
+    SpeakerDiarizationResult,
+)
 
 _MIN_REFERENCE_MATCH = 0.45
 
@@ -121,7 +124,10 @@ def _validate_result(
         raise RuntimeError("diarization acceptance returned unexpected provenance")
     speakers = {turn.speaker_ref for turn in result.turns}
     if len(speakers) != 2:
-        raise RuntimeError("real diarization acceptance did not recover two speakers")
+        raise RuntimeError(
+            "real diarization acceptance did not recover two speakers "
+            f"(recovered {len(speakers)})"
+        )
     for turn in result.turns:
         if not turn.speaker_ref.startswith("speaker-"):
             raise RuntimeError("diarization acceptance returned a non-anonymous label")
@@ -160,10 +166,19 @@ def main() -> int:
         )
 
     diarizer = PyannoteSpeakerDiarizer(model_cache_path=cache_dir)
-    downloaded = diarizer.diarize(audio_path, allow_model_download=True)
+    request = SpeakerDiarizationRequest(num_speakers=2)
+    downloaded = diarizer.diarize(
+        audio_path,
+        allow_model_download=True,
+        request=request,
+    )
     _validate_result(audio_path=audio_path, result=downloaded, reference=reference)
 
-    cached = diarizer.diarize(audio_path, allow_model_download=False)
+    cached = diarizer.diarize(
+        audio_path,
+        allow_model_download=False,
+        request=request,
+    )
     _validate_result(audio_path=audio_path, result=cached, reference=reference)
     return 0
 

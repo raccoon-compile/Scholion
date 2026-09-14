@@ -26,10 +26,10 @@ SnapshotLoader = Callable[..., str]
 ModuleLoader = Callable[[str], Any]
 VersionReader = Callable[[str], str]
 
-# CVE-2026-58659 affects Lightning releases through 2.6.5. The upstream fix was
-# merged in July 2026 but had not yet shipped in a normal 2.x release when this
-# guard was added. Fail closed before importing pyannote, which subclasses
-# LightningModule and loads model checkpoints through Lightning.
+# CVE-2026-58659 affects Lightning releases through 2.6.5. Lightning 2.6.6
+# ships the upstream checkpoint-loading fixes. Keep the minimum-version guard so
+# older or unverifiable environments still fail closed before importing pyannote,
+# which subclasses LightningModule and loads model checkpoints through Lightning.
 _MINIMUM_SAFE_LIGHTNING = (2, 6, 6)
 _STABLE_VERSION = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:\.post\d+)?$")
 
