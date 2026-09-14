@@ -3,6 +3,8 @@ name: Mutation Qualification
 # Mutation testing is a targeted qualification tool, not a routine PR tax.
 # Run a focused suite manually when the corresponding decision-heavy behavior changes.
 # Playback also remains an automatic PR qualification when its authorization surface changes.
+# Dependency-manifest changes are covered by their normal quality/security/release gates;
+# run mutation suites manually only when those changes also alter decision-heavy behavior.
 on:
   workflow_dispatch:
     inputs:
@@ -24,7 +26,6 @@ on:
       - "src/scholion/desktop/playback_bridge.py"
       - "src/scholion/desktop/tests/test_playback_bridge.py"
       - ".github/workflows/mutation-qualification.yml"
-      - "pyproject.toml"
 
 permissions:
   contents: read
