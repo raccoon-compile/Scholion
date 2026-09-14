@@ -360,10 +360,16 @@ dependency audit remains clean. The exception does not broaden the runtime versi
 and must be removed when the upstream advisory record is corrected.
 
 The real pyannote/PyTorch dependency graph, deterministic diarization/status tests, and
-clean-wheel installation are qualified without loading the gated Community-1 model. Real
-two-speaker Community-1 acceptance remains credential-gated and requires authenticated
-Hugging Face model access; it must pass before Scholion claims operational real-model
-qualification.
+clean-wheel installation are qualified independently of model acquisition. PR #183 also
+qualified the separate credential-gated Community-1 boundary against a pinned
+ two-speaker fixture containing overlapping speech: authenticated model acquisition,
+real ground-truth-checked inference, and a second cache-only inference with model download
+disabled all passed with telemetry disabled. This is bounded acceptance evidence, not a
+claim that speaker attribution is infallible on arbitrary recordings.
+
+The real-model lane remains manual and credential-gated because Community-1 acquisition
+requires authenticated Hugging Face access. Routine pull requests do not receive the
+repository secret.
 
 Any diarization model-download authorization is narrowly scoped to the optional
 diarization capability. It is not a general ASR network permission.
