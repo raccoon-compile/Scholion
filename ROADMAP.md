@@ -4,13 +4,13 @@ Scholion is a **private, local-first workspace for recorded evidence**. Its job 
 
 Modern Scholion restarted on August 2, 2026. The MVP product foundation is now substantially built: import, local processing, explicit embedded-audio-track choice, canonical evidence, lexical/semantic/hybrid retrieval, verified navigation, durable notes/tags/collections/saved searches, transcript and speaker tools, native source playback, lifecycle/retention controls, contextual guidance, accessibility themes, and signed update/model-trust mechanics all exist in repository code.
 
-Issue #145 is complete. PR #164 established the Windows/macOS packaging foundation, PR #166 completed deterministic release provenance plus evidence-safe package lifecycle qualification, PR #167 completed repository-owned packaged FFmpeg/FFprobe custody, PR #170 exact-pinned and wired strict native Ed25519 update verification, PR #172 added deterministic production trust-input custody, and PR #180 added public-key catalog/ceremony support. Scholion now has a locked/audited managed frozen runtime, reviewed-master native icon generation, exact unsigned Windows NSIS and macOS DMG preview packages, real packaged-runtime acceptance, deterministic package evidence, evidence-preserving Windows uninstall/reinstall qualification, self-contained reviewed media-tool custody, and a fail-closed native verification/custody path ready to consume real reviewed public trust inputs. The active release tranche is now **real production trust inputs and production-shaped qualification**: external production release-key custody/public material plus reviewed faster-whisper `tiny`, `small`, and `medium` snapshots. Signing/notarization, native update activation, and representative-device qualification remain later release gates.
+Issue #145 is complete. PR #164 established the Windows/macOS packaging foundation, PR #166 completed deterministic release provenance plus evidence-safe package lifecycle qualification, PR #167 completed repository-owned packaged FFmpeg/FFprobe custody, PR #170 exact-pinned and wired strict native Ed25519 update verification, PR #172 added deterministic production trust-input custody, PR #180 added public-key catalog/ceremony support, and PR #183 restored optional Community-1 diarization on the patched Lightning 2.6.6+ boundary with clean-install plus real credential-gated model acceptance. Scholion now has a locked/audited managed frozen runtime, reviewed-master native icon generation, exact unsigned Windows NSIS and macOS DMG preview packages, real packaged-runtime acceptance, deterministic package evidence, evidence-preserving Windows uninstall/reinstall qualification, self-contained reviewed media-tool custody, a fail-closed native verification/custody path ready to consume real reviewed public trust inputs, and a real-model-qualified local anonymous diarization path. The active release tranche is now **real production trust inputs and production-shaped qualification**: external production release-key custody/public material plus reviewed faster-whisper `tiny`, `small`, and `medium` snapshots. Signing/notarization, native update activation, and representative-device qualification remain later release gates.
 
 ![Scholion roadmap 🗺️✨ diagram](./docs/diagrams/generated/scholion-roadmap.svg)
 
 [Diagram source (Mermaid)](./docs/diagrams/src/scholion-roadmap.mmd)
 
-Text fallback: Scholion already spans local media, reliable transcription, canonical evidence, private retrieval, verified navigation, durable research, native desktop workflows, lifecycle/playback, signed update/model-trust mechanics, hosted cross-platform real-media acceptance, completed pre-packaging readiness, exact Windows/macOS preview-package qualification, deterministic release provenance, evidence-safe Windows package lifecycle, repository-owned packaged FFmpeg/FFprobe, strict native Ed25519 verification, and deterministic production trust-input custody. The next tranche supplies and qualifies the real reviewed release-key/model trust material before OS signing/notarization, native update activation, and representative physical-device qualification. Official Linux binary distribution remains separately blocked by issue #135.
+Text fallback: Scholion already spans local media, reliable transcription, canonical evidence, private retrieval, verified navigation, durable research, native desktop workflows, lifecycle/playback, real-model-qualified anonymous diarization, signed update/model-trust mechanics, hosted cross-platform real-media acceptance, completed pre-packaging readiness, exact Windows/macOS preview-package qualification, deterministic release provenance, evidence-safe Windows package lifecycle, repository-owned packaged FFmpeg/FFprobe, strict native Ed25519 verification, and deterministic production trust-input custody. The next tranche supplies and qualifies the real reviewed release-key/model trust material before OS signing/notarization, native update activation, and representative physical-device qualification. Official Linux binary distribution remains separately blocked by issue #135.
 
 # MVP foundation now
 
@@ -26,9 +26,11 @@ The repository intentionally still contains **no guessed production faster-whisp
 
 Packaged Windows/macOS preview runtimes now own their FFmpeg/FFprobe dependency instead of inheriting ambient host PATH. PR #167 pins reviewed platform inputs, validates exact bytes, binds media-tool identity into release evidence, and makes frozen Scholion resolve only its bundled `media-tools` directory. Source/development mode may still use PATH for ordinary developer ergonomics. These custody controls are strong provenance and dependency-boundary controls, not an OS parser sandbox.
 
-The Processing Center presents readiness, model state, preflight, supervised start/cancel, durable job status, checkpoint resume, fresh retry, private execution-state discard, bounded public task failures, in-place model task activity, and speaker-labeling capability gating. Python remains authoritative for planning, admission, model custody, stream-selection validation, resume compatibility, and transcript correctness. Tauri owns allowlisted long-running child-process lifetime. React submits intent and presents state.
+The Processing Center presents readiness, model state, preflight, supervised start/cancel, durable job status, checkpoint resume, fresh retry, private execution-state discard, bounded public task failures, in-place model task activity, speaker-labeling capability gating, and optional automatic/exact/range speaker-count guidance when diarization is enabled. Python remains authoritative for planning, admission, model custody, stream-selection validation, resume compatibility, diarization constraints, and transcript correctness. Tauri owns allowlisted long-running child-process lifetime. React submits intent and presents state.
 
-See **[Audio tracks](docs/audio-tracks.md)**, **[Processing Center](docs/architecture/processing-center.md)**, **[Local model management](docs/architecture/model-management.md)**, **[Signed update and model trust channel](docs/security/update-model-trust.md)**, and **[Production trust inputs](docs/security/production-trust-inputs.md)**.
+PR #183 completed the previously separate real-model qualification boundary for optional diarization. The locked Lightning 2.6.6 + pyannote 4.0.7 graph clean-installs, the pinned two-speaker fixture includes overlapping speech, authenticated Community-1 inference matches ground truth, and a second inference succeeds from the local cache with model download disabled. This is bounded acceptance evidence, not a claim that arbitrary many-speaker or heavily overlapping recordings need no human correction.
+
+See **[Audio tracks](docs/audio-tracks.md)**, **[Processing Center](docs/architecture/processing-center.md)**, **[Anonymous speaker diarization](docs/architecture/diarization.md)**, **[Local model management](docs/architecture/model-management.md)**, **[Signed update and model trust channel](docs/security/update-model-trust.md)**, and **[Production trust inputs](docs/security/production-trust-inputs.md)**.
 
 ## Canonical evidence and research
 
@@ -73,7 +75,7 @@ The desktop now also has an explicit **Updates** workspace. Manual checks use on
 | Processing | plan, execute, checkpoint, resume/retry | implemented | representative native task qualification under #114 |
 | Embedded audio tracks | Python probe/selector/planner + FFmpeg exact map | implemented | future proven multi-track playback; separate-file sync remains out of scope |
 | Canonical JSON | authoritative evidence | implemented consumer views | package/qualification only |
-| Speaker labels | generation-bound human state | implemented | optional organization polish |
+| Speaker diarization + labels | anonymous model evidence + generation-bound human state | real Community-1 acceptance qualified; desktop Auto/Exact/Range count guidance; human display labels implemented | representative-device calibration; human correction remains expected on difficult recordings |
 | Provenance/details | canonical verified inspection | implemented | richer troubleshooting optional |
 | TXT/SRT/WebVTT | deterministic publication | implemented | optional export organization |
 | Lexical/semantic/hybrid search | private retrieval | implemented | current source dependency path is adequate for MVP; packaged semantic custody is post-MVP |
@@ -94,7 +96,7 @@ The desktop now also has an explicit **Updates** workspace. Manual checks use on
 
 ## 1. Core product workflows complete
 
-Research/search, Processing, explicit embedded-track transcription, transcript/speaker tools, verified playback, lifecycle/retention, contextual guidance, themes/accessibility, architecture consolidation, and product identity are complete implementation foundations.
+Research/search, Processing, explicit embedded-track transcription, transcript/speaker tools, real-model-qualified optional Community-1 diarization, verified playback, lifecycle/retention, contextual guidance, themes/accessibility, architecture consolidation, and product identity are complete implementation foundations. Difficult recordings may still require human speaker correction; that is a product-quality boundary, not missing diarization plumbing.
 
 ## 2. Signed update and model-trust mechanics complete
 
@@ -172,6 +174,8 @@ The current tranche is deliberately narrower than “finish packaging.” The ve
 - finish #168 by qualifying the production-shaped package end to end with the actual public catalog/model policy, including valid/invalid signature behavior, model admission/revalidation, offline behavior, and exact package/provenance identity.
 
 This tranche must not invent a private signing key, guess model hashes, or promote whichever development model cache happens to exist. The generator measures bytes; human review confers policy trust.
+
+PR #183 and the speaker-count desktop polish do not change this release sequence. Diarization is a completed product capability with remaining representative-device calibration; the active release blocker remains production trust material and qualification.
 
 After #168 is complete, the remaining release gates are explicitly ordered:
 
