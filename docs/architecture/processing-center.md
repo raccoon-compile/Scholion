@@ -17,7 +17,7 @@ Python remains authoritative for:
 - transcription preflight and resource admission;
 - checkpoint compatibility and resume contracts;
 - transcription execution correctness;
-- diarization requests and explicit model-download consent;
+- diarization requests, optional speaker-count constraints, and explicit model-download consent;
 - canonical transcript publication and derived exports; and
 - durable private job lifecycle state.
 
@@ -67,6 +67,10 @@ The repository intentionally contains no guessed production faster-whisper entri
 
 Optional diarization keeps its network/dependency boundary separate from transcription-model custody. Processing asks Python for a read-only speaker-labeling capability state before offering the option. If the optional runtime is missing, unverifiable, or security-held, the control is disabled with a safe reason rather than inviting a task the backend is guaranteed to reject.
 
+When speaker labeling is available and enabled, Processing Center exposes the same speaker-count intent already supported by Python and the CLI. The user can leave counting on **Let Scholion estimate**, provide an exact known count, or provide a minimum/maximum range. Exact counts and ranges are alternative constraints rather than simultaneous settings. The desktop bounds each supplied value to the backend's accepted `1..100` range and keeps range endpoints ordered before sending intent to Python.
+
+These controls do not make React a diarization authority. They merely preserve useful facts the user already knows so Community-1 does not have to infer speaker count unnecessarily. Python still validates the request and owns execution. Turning speaker labeling off clears count guidance and model-download consent so stale diarization-only intent cannot cross the worker boundary.
+
 Derived TXT/SRT/VTT files remain disposable views; canonical transcript JSON remains evidence.
 
 ## Start flow
@@ -76,7 +80,7 @@ Derived TXT/SRT/VTT files remain disposable views; canonical transcript JSON rem
 3. Python probes the recording, inspects current resources, assesses strategies, revalidates managed model custody/policy, and returns a minimized preflight DTO.
 4. If the source has several embedded audio streams and no explicit stream was requested, Python marks stream confirmation as required. The desktop presents the available tracks but does not treat the probe default as user intent.
 5. The user chooses one track. React submits only that stream index and Python re-runs preflight with the exact selection bound into the plan.
-6. The user reviews the resulting profile/strategy/resource plan.
+6. The user reviews the resulting profile/strategy/resource plan and any optional enhancement/diarization intent, including speaker-count guidance they already know.
 7. React asks Tauri to start an allowlisted transcription worker for the exact preflight job identity and selected stream.
 8. Python owns lifecycle state and checkpoints while the native host owns child-process lifetime.
 9. The Processing Center polls bounded task status and durable job lifecycle state.

@@ -36,7 +36,13 @@ uv run scholion transcribe meeting.wav --diarize --min-speakers 2 --max-speakers
 Exact and bounded speaker-count options are mutually exclusive. Speaker-count options
 are invalid without `--diarize`.
 
-## Current operational status: patched runtime integrated; real-model acceptance pending 🔐
+The desktop Processing Center exposes the same intent without requiring CLI knowledge.
+When **Label speakers automatically** is enabled, the user can leave speaker counting on
+**Let Scholion estimate**, provide an exact count they already know, or provide a minimum
+and maximum range. These values are user-supplied constraints, not speaker identities or
+claims that the model independently inferred the participant count.
+
+## Current operational status: patched runtime and real-model acceptance qualified ✅
 
 The first adapter targets the open-source pyannote `community-1` pipeline.
 
@@ -57,17 +63,24 @@ affected, and Lightning 2.6.6 release notes document the fixes. The OSV exceptio
 therefore bounded metadata-drift compensation, not permission to run an affected
 Lightning release, and expires so the repository must re-evaluate the upstream record.
 
-Real `community-1` inference is a separate qualification boundary. The existing
-two-speaker acceptance harness uses a pinned audio/RTTM fixture, runs inference twice,
-checks ground truth, and keeps telemetry disabled, but model acquisition requires
-authenticated Hugging Face access. Until that credential-gated acceptance passes,
-Scholion does not claim everyday operational qualification for diarization.
+PR #183 completed the separate credential-gated real-model boundary. Scholion's pinned
+two-speaker acceptance fixture contains overlapping speech and a ground-truth RTTM. The
+acceptance harness supplies the fixture's known two-speaker count, downloads Community-1
+through authenticated Hugging Face access, runs real inference against the pinned ground
+truth, then runs inference again from the local cache with model download disabled.
+Pyannote telemetry remains disabled for both runs.
+
+That proof matters because it exercises the actual model/runtime/native-audio path rather
+than substituting a mock or import-only check. It is still a bounded acceptance fixture,
+not a claim that diarization is perfect on arbitrary meetings, many-speaker recordings,
+heavy overlap, similar voices, or poor microphones.
 
 So the current product description is deliberately precise:
 
-> **Diarization is integrated and the patched runtime is security-qualified at the
-> dependency/application boundary; real Community-1 two-speaker model acceptance remains
-> pending authenticated upstream access.**
+> **Diarization is integrated on the patched Lightning 2.6.6+ runtime, clean-install
+> qualified, and proven against real Community-1 two-speaker inference plus cache-only
+> reuse. Speaker attribution remains probabilistic derived evidence that users may need
+> to correct on difficult recordings.**
 
 ## Privacy and model-acquisition boundary
 
@@ -275,10 +288,12 @@ auditing.
 
 A clean-wheel distribution lane imports the real pyannote/PyTorch runtime without
 executing the gated model. The dependency security hold is lifted for locked Lightning
-2.6.6+, but the dedicated real-model acceptance workflow remains manual and
+2.6.6+, and PR #183 added the separate real-model proof: authenticated Community-1 model
+acquisition, pinned two-speaker/overlap ground truth, real inference, and a second
+cache-only inference with model download disabled. That lane remains manual and
 credential-gated because Community-1 acquisition requires authenticated Hugging Face
-access. Passing dependency/runtime qualification is not substituted for that real-model
-proof.
+access; routine pull requests continue to use deterministic and clean-install coverage
+without exposing the repository secret.
 
 ## Current deliberate limits
 

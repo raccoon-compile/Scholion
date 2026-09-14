@@ -26,6 +26,8 @@ interface ProcessingCenterProps {
 const READINESS_TIMEOUT_MS = 15_000;
 const SECONDARY_REFRESH_TIMEOUT_MS = 15_000;
 
+type SpeakerCountMode = "auto" | "exact" | "range";
+
 const PROFILE_COPY: Record<
   ProcessingProfile,
   { label: string; detail: string }
@@ -99,6 +101,12 @@ function errorMessage(caught: unknown, fallback: string): string {
   if (caught instanceof Error && caught.message.trim()) return caught.message;
   if (typeof caught === "string" && caught.trim()) return caught;
   return fallback;
+}
+
+function boundedSpeakerCount(raw: string, previous: number | null, fallback: number): number {
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isInteger(parsed)) return previous ?? fallback;
+  return Math.max(1, Math.min(100, parsed));
 }
 
 async function withTimeout<T>(
@@ -264,6 +272,12 @@ export function ProcessingCenter({
     [readiness],
   );
   const speakerLabeling = readiness?.capabilities.speaker_labeling ?? null;
+  const speakerCountMode: SpeakerCountMode =
+    execution.speakers !== null
+      ? "exact"
+      : execution.minSpeakers !== null || execution.maxSpeakers !== null
+        ? "range"
+        : "auto";
 
   const preflightOptions: PreflightOptions = {
     profile,
@@ -519,6 +533,34 @@ export function ProcessingCenter({
     } finally {
       setBusy(false);
     }
+  }
+
+  function changeSpeakerCountMode(mode: SpeakerCountMode) {
+    setExecution((current) => {
+      if (mode === "auto") {
+        return {
+          ...current,
+          speakers: null,
+          minSpeakers: null,
+          maxSpeakers: null,
+        };
+      }
+      if (mode === "exact") {
+        return {
+          ...current,
+          speakers: current.speakers ?? 2,
+          minSpeakers: null,
+          maxSpeakers: null,
+        };
+      }
+      const minSpeakers = current.minSpeakers ?? 2;
+      return {
+        ...current,
+        speakers: null,
+        minSpeakers,
+        maxSpeakers: Math.max(minSpeakers, current.maxSpeakers ?? 6),
+      };
+    });
   }
 
   function toggleExport(format: ExportFormat) {
@@ -824,7 +866,19 @@ export function ProcessingCenter({
                   type="checkbox"
                   checked={execution.diarize && speakerLabeling?.available === true}
                   disabled={busy || speakerLabeling?.available !== true}
-                  onChange={(event) => setExecution((current) => ({ ...current, diarize: event.target.checked, allowDiarizationModelDownload: event.target.checked ? current.allowDiarizationModelDownload : false }))}
+                  onChange={(event) => {
+                    const enabled = event.target.checked;
+                    setExecution((current) => ({
+                      ...current,
+                      diarize: enabled,
+                      allowDiarizationModelDownload: enabled
+                        ? current.allowDiarizationModelDownload
+                        : false,
+                      speakers: enabled ? current.speakers : null,
+                      minSpeakers: enabled ? current.minSpeakers : null,
+                      maxSpeakers: enabled ? current.maxSpeakers : null,
+                    }));
+                  }}
                 />
                 <span>
                   <strong>Label speakers automatically</strong>
@@ -835,6 +889,113 @@ export function ProcessingCenter({
                   </small>
                 </span>
               </label>
+              {execution.diarize && speakerLabeling?.available === true && (
+                <>
+                  <div className="advanced-processing-grid">
+                    <label>
+                      <span>How many speakers?</span>
+                      <select
+                        value={speakerCountMode}
+                        onChange={(event) =>
+                          changeSpeakerCountMode(event.target.value as SpeakerCountMode)
+                        }
+                      >
+                        <option value="auto">Let Scholion estimate</option>
+                        <option value="exact">I know the exact number</option>
+                        <option value="range">I know a range</option>
+                      </select>
+                    </label>
+                    {speakerCountMode === "exact" && (
+                      <label>
+                        <span>Exact speaker count</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={100}
+                          step={1}
+                          value={execution.speakers ?? 2}
+                          onChange={(event) =>
+                            setExecution((current) => ({
+                              ...current,
+                              speakers: boundedSpeakerCount(
+                                event.target.value,
+                                current.speakers,
+                                2,
+                              ),
+                              minSpeakers: null,
+                              maxSpeakers: null,
+                            }))
+                          }
+                        />
+                      </label>
+                    )}
+                    {speakerCountMode === "range" && (
+                      <>
+                        <label>
+                          <span>Minimum speakers</span>
+                          <input
+                            type="number"
+                            min={1}
+                            max={100}
+                            step={1}
+                            value={execution.minSpeakers ?? 2}
+                            onChange={(event) =>
+                              setExecution((current) => {
+                                const minSpeakers = boundedSpeakerCount(
+                                  event.target.value,
+                                  current.minSpeakers,
+                                  2,
+                                );
+                                return {
+                                  ...current,
+                                  speakers: null,
+                                  minSpeakers,
+                                  maxSpeakers: Math.max(
+                                    minSpeakers,
+                                    current.maxSpeakers ?? 6,
+                                  ),
+                                };
+                              })
+                            }
+                          />
+                        </label>
+                        <label>
+                          <span>Maximum speakers</span>
+                          <input
+                            type="number"
+                            min={1}
+                            max={100}
+                            step={1}
+                            value={execution.maxSpeakers ?? 6}
+                            onChange={(event) =>
+                              setExecution((current) => {
+                                const maxSpeakers = boundedSpeakerCount(
+                                  event.target.value,
+                                  current.maxSpeakers,
+                                  6,
+                                );
+                                return {
+                                  ...current,
+                                  speakers: null,
+                                  minSpeakers: Math.min(
+                                    current.minSpeakers ?? 2,
+                                    maxSpeakers,
+                                  ),
+                                  maxSpeakers,
+                                };
+                              })
+                            }
+                          />
+                        </label>
+                      </>
+                    )}
+                  </div>
+                  <p className="backend-choice">
+                    If you already know the participant count, telling Scholion can make
+                    speaker grouping easier. Leave this automatic when you are unsure.
+                  </p>
+                </>
+              )}
               {execution.diarize && speakerLabeling?.available === true && (
                 <label className="checkbox-row">
                   <input
