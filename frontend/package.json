@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite --strictPort",
-    "dev:mock": "vite --strictPort --open '/?e2e=1'",
+    "dev:mock": "vite --strictPort --open \"/?e2e=1\"",
     "doctor:desktop": "node scripts/desktop-doctor.mjs",
     "check:tauri-versions": "node scripts/check-tauri-versions.mjs",
     "build": "tsc --noEmit && vite build",
