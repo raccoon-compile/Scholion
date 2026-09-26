@@ -28,13 +28,13 @@
     "windows-x86_64": {
       "strategy": "pinned-archive",
       "upstream_repository": "BtbN/FFmpeg-Builds",
-      "release_id": 385119951,
-      "release_tag": "autobuild-2026-09-08-23-15",
-      "asset_id": 551508071,
-      "asset_name": "ffmpeg-n9.0.1-27-g9b0578816c-win64-lgpl-9.0.zip",
-      "asset_url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-09-08-23-15/ffmpeg-n9.0.1-27-g9b0578816c-win64-lgpl-9.0.zip",
-      "asset_size_bytes": 147038743,
-      "asset_sha256": "ea426b29489671e4af94392ad2d0dc5628aa8afcd7ccbd42b215e93209ced6b8",
+      "release_id": 379776909,
+      "release_tag": "autobuild-2026-08-31-13-27",
+      "asset_id": 538025417,
+      "asset_name": "ffmpeg-n9.0.1-11-ge47273f4d9-win64-lgpl-9.0.zip",
+      "asset_url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-08-31-13-27/ffmpeg-n9.0.1-11-ge47273f4d9-win64-lgpl-9.0.zip",
+      "asset_size_bytes": 147007942,
+      "asset_sha256": "2484854ad6988d34560f4e6ea7a6ecb9dde0af7c229d2591815d056b04ec4f56",
       "license": "LGPL-2.1-or-later"
     }
   }
