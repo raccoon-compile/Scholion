@@ -168,7 +168,8 @@ jobs:
       - name: Enforce Rust license, source, and dependency policy
         uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2
         with:
-          rust-version: "1.90.0"
+          # cargo-deny inspects dependency metadata; using the project Rust pin here
+          # needlessly downloads a second musl toolchain inside the action container.
           manifest-path: "frontend/src-tauri/Cargo.toml"
           command: "check bans licenses sources"
 
