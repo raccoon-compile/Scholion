@@ -39,7 +39,7 @@ jobs:
           python-version: "3.12"
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.33"
           enable-cache: true
@@ -131,7 +131,7 @@ jobs:
       # independent advisory backstop for the Python and npm lockfiles rather
       # than converting those RustSec informational findings into hard failures.
       - name: Cross-check Python and frontend locked graphs against OSV
-        uses: google/osv-scanner-action/osv-scanner-action@8e5cf47b818121e8b405931c82126c2630b0b20d # v2.5.1
+        uses: google/osv-scanner-action/osv-scanner-action@8ac9e5ce44cc7178e0e04229a91bdcc003166e57 # v2.5.1
         with:
           scan-args: |-
             --config=./osv-scanner.toml

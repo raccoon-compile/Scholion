@@ -31,7 +31,7 @@ diarization = [
 
 [dependency-groups]
 packaging = [
-    "pyinstaller==6.22.2",
+    "pyinstaller==6.22.3",
 ]
 dev = [
     "hypothesis>=6.168.0,<7",
@@ -42,7 +42,7 @@ dev = [
     "pytest-cov>=6,<8",
     "pytest-mock>=3.14,<4",
     "radon>=6,<7",
-    "ruff>=0.16.6,<1",
+    "ruff>=0.16.7,<1",
     "types-psutil>=7.2.2.20260906,<8",
     "vulture>=2.16,<3",
 ]
