@@ -12,7 +12,7 @@ from scholion.supply_chain.release_trust_inputs import (
     verify_prepared_release_trust_inputs,
 )
 
-_EXPECTED_PYINSTALLER = "6.22.2"
+_EXPECTED_PYINSTALLER = "6.22.3"
 _RUNTIME_METADATA = (
     "scholion",
     "faster-whisper",
