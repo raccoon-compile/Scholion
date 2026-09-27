@@ -28,6 +28,7 @@ frontend/src-tauri/target/
 
 # Prepared release inputs/evidence (reviewed source policy belongs elsewhere)
 build/release-trust-inputs/
+build/release-key-review/
 
 # Documentation tooling artifacts
 tools/mermaid/node_modules/
