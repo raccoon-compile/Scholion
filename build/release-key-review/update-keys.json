@@ -1,0 +1,11 @@
+{
+  "keys": [
+    {
+      "algorithm": "ed25519",
+      "key_id": "release-2026-a",
+      "public_key_hex": "4ff07a334ed9c69e52766170848bc6493fd4d68ef23a6ec9fcc591a4315c75a3",
+      "state": "current"
+    }
+  ],
+  "schema_version": 1
+}
