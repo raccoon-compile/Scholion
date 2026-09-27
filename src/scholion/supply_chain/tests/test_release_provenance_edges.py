@@ -269,7 +269,7 @@ def test_collect_release_toolchain_uses_windows_npm_wrapper(
         return SimpleNamespace(stdout=versions[command[0]], stderr="")
 
     monkeypatch.setattr(subprocess, "run", fake_run)
-    monkeypatch.setattr("importlib.metadata.version", lambda _: "6.22.2")
+    monkeypatch.setattr("importlib.metadata.version", lambda _: "6.22.3")
     monkeypatch.setattr(
         "scholion.supply_chain.release_provenance.platform.system",
         lambda: "Windows",
@@ -278,7 +278,7 @@ def test_collect_release_toolchain_uses_windows_npm_wrapper(
     toolchain = collect_release_toolchain(repository)
 
     assert toolchain["tauri-cli"] == "2.8.5"
-    assert toolchain["pyinstaller"] == "6.22.2"
+    assert toolchain["pyinstaller"] == "6.22.3"
     assert toolchain["uv"] == "uv 0.11.33"
     assert toolchain["npm"] == "11.6.0"
     assert toolchain["cargo"] == "cargo 1.90.0"
@@ -303,7 +303,7 @@ def test_collect_release_toolchain_fails_closed_on_missing_tool(
         raise FileNotFoundError("missing")
 
     monkeypatch.setattr(subprocess, "run", fail_run)
-    monkeypatch.setattr("importlib.metadata.version", lambda _: "6.22.2")
+    monkeypatch.setattr("importlib.metadata.version", lambda _: "6.22.3")
 
     with pytest.raises(ReleaseProvenanceError, match="could not resolve build tool"):
         collect_release_toolchain(repository)

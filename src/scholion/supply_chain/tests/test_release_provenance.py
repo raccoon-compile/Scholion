@@ -15,7 +15,7 @@ _RUNNER_ARCH = "X64"
 _TOOLCHAIN = {
     "cargo": "cargo 1.90.0",
     "node": "v24.0.0",
-    "pyinstaller": "6.22.2",
+    "pyinstaller": "6.22.3",
 }
 
 
