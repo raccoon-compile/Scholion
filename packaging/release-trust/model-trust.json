@@ -1,0 +1,128 @@
+{
+  "models": [
+    {
+      "engine": "faster-whisper",
+      "files": [
+        {
+          "path": ".gitattributes",
+          "sha256": "db7c0371f46f0840b8f25794c1e3321c9b5820a8cb6ba9694a46fc64b8fae5a6",
+          "size_bytes": 1477
+        },
+        {
+          "path": "README.md",
+          "sha256": "29fb8444a02c1f133ab7e538525aa478ff68845964f21cf42500842b0e4a7b20",
+          "size_bytes": 1991
+        },
+        {
+          "path": "config.json",
+          "sha256": "a73a28cdfe1c43ccc7202fa333d1f89c202477271407ae9a7f19afa52039cac8",
+          "size_bytes": 2249
+        },
+        {
+          "path": "model.bin",
+          "sha256": "dcb76c6586fc06cbdac6dd21f14cfd129cc4cdd9dce19bf4ffa62e59cbe6e6d1",
+          "size_bytes": 75538270
+        },
+        {
+          "path": "tokenizer.json",
+          "sha256": "fb7b63191e9bb045082c79fd742a3106a12c99513ab30df4a0d47fa6cb6fd0ab",
+          "size_bytes": 2203239
+        },
+        {
+          "path": "vocabulary.txt",
+          "sha256": "34ce3fe1c5041027b3f8d42912270993f986dbc4bb34cf27f951e34a1e453913",
+          "size_bytes": 459861
+        }
+      ],
+      "license_id": "MIT",
+      "license_url": "https://raw.githubusercontent.com/SYSTRAN/faster-whisper/ed9a06cd89a93e47838f564998a6c09b655d7f43/LICENSE",
+      "model_id": "tiny",
+      "repository_id": "Systran/faster-whisper-tiny",
+      "revision": "d90ca5fe260221311c53c58e660288d3deb8d356",
+      "source_url": "https://huggingface.co/Systran/faster-whisper-tiny/tree/d90ca5fe260221311c53c58e660288d3deb8d356"
+    },
+    {
+      "engine": "faster-whisper",
+      "files": [
+        {
+          "path": ".gitattributes",
+          "sha256": "db7c0371f46f0840b8f25794c1e3321c9b5820a8cb6ba9694a46fc64b8fae5a6",
+          "size_bytes": 1477
+        },
+        {
+          "path": "README.md",
+          "sha256": "329373481008c7c38654aff8ecdcf0163c211557cc7ba8e2ef6f2f84b4f75ec8",
+          "size_bytes": 1998
+        },
+        {
+          "path": "config.json",
+          "sha256": "b55496ac7940a7ae47d2c01eab40edfd8701feec1229d9cce3b40014383fb828",
+          "size_bytes": 2370
+        },
+        {
+          "path": "model.bin",
+          "sha256": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671",
+          "size_bytes": 483546902
+        },
+        {
+          "path": "tokenizer.json",
+          "sha256": "fb7b63191e9bb045082c79fd742a3106a12c99513ab30df4a0d47fa6cb6fd0ab",
+          "size_bytes": 2203239
+        },
+        {
+          "path": "vocabulary.txt",
+          "sha256": "34ce3fe1c5041027b3f8d42912270993f986dbc4bb34cf27f951e34a1e453913",
+          "size_bytes": 459861
+        }
+      ],
+      "license_id": "MIT",
+      "license_url": "https://raw.githubusercontent.com/SYSTRAN/faster-whisper/ed9a06cd89a93e47838f564998a6c09b655d7f43/LICENSE",
+      "model_id": "small",
+      "repository_id": "Systran/faster-whisper-small",
+      "revision": "536b0662742c02347bc0e980a01041f333bce120",
+      "source_url": "https://huggingface.co/Systran/faster-whisper-small/tree/536b0662742c02347bc0e980a01041f333bce120"
+    },
+    {
+      "engine": "faster-whisper",
+      "files": [
+        {
+          "path": ".gitattributes",
+          "sha256": "db7c0371f46f0840b8f25794c1e3321c9b5820a8cb6ba9694a46fc64b8fae5a6",
+          "size_bytes": 1477
+        },
+        {
+          "path": "README.md",
+          "sha256": "a30144a6232423e5e4e9e17952b5a543a506dc0cb9de02fd9d875d7ec40fef83",
+          "size_bytes": 2005
+        },
+        {
+          "path": "config.json",
+          "sha256": "3622a2ddc41ec0e0fd4e68c13c6830f03b90c38d89aaad184de02c8c642cf807",
+          "size_bytes": 2257
+        },
+        {
+          "path": "model.bin",
+          "sha256": "9b45e1009dcc4ab601eff815b61d80e60ce3fd8c74c1a14f4a282258286b51ae",
+          "size_bytes": 1527906378
+        },
+        {
+          "path": "tokenizer.json",
+          "sha256": "fb7b63191e9bb045082c79fd742a3106a12c99513ab30df4a0d47fa6cb6fd0ab",
+          "size_bytes": 2203239
+        },
+        {
+          "path": "vocabulary.txt",
+          "sha256": "34ce3fe1c5041027b3f8d42912270993f986dbc4bb34cf27f951e34a1e453913",
+          "size_bytes": 459861
+        }
+      ],
+      "license_id": "MIT",
+      "license_url": "https://raw.githubusercontent.com/SYSTRAN/faster-whisper/ed9a06cd89a93e47838f564998a6c09b655d7f43/LICENSE",
+      "model_id": "medium",
+      "repository_id": "Systran/faster-whisper-medium",
+      "revision": "08e178d48790749d25932bbc082711ddcfdfbc4f",
+      "source_url": "https://huggingface.co/Systran/faster-whisper-medium/tree/08e178d48790749d25932bbc082711ddcfdfbc4f"
+    }
+  ],
+  "schema_version": 1
+}
