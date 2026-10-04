@@ -187,13 +187,13 @@ def _qualify_legacy_policy_migration(
     ):
         raise RuntimeError("packaged legacy model was not reported as untrusted")
     models = result.get("models")
+    if not isinstance(models, list):
+        raise RuntimeError("packaged readiness omitted model inventory")
     tiny = next(
         (
             item
             for item in models
-            if isinstance(models, list)
-            and isinstance(item, dict)
-            and item.get("model_id") == "tiny"
+            if isinstance(item, dict) and item.get("model_id") == "tiny"
         ),
         None,
     )
@@ -226,6 +226,7 @@ def _qualify_legacy_policy_migration(
         },
     )
     _require_worker_success(removal, operation="legacy model removal")
+
 
 def _words(text: str) -> set[str]:
     return set(re.findall(r"[^\W\d_]+", text.lower(), flags=re.UNICODE))
