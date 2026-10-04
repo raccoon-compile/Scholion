@@ -10,13 +10,13 @@ Issue #177 owns this ceremony. Issue #168 consumes only the reviewed public `upd
 
 The Scholion Ed25519 release key signs the exact update-manifest payload bytes produced by `scripts/build_release_metadata.py payload`.
 
-It does **not** replace Windows code signing or macOS Developer ID signing/notarization. Those are separate OS trust systems tracked by #173.
+It does **not** replace Windows code signing. Apple Developer ID signing/notarization is a separate optional platform trust layer; the first macOS release instead uses Scholion's signed exact-byte release evidence plus explicit non-notarized disclosure under #173.
 
 The three trust identities therefore remain distinct:
 
 1. Scholion Ed25519 release key: signs Scholion's own release metadata.
 2. Windows code-signing identity: authenticates Windows application/installer artifacts to Windows.
-3. Apple Developer ID identity: authenticates the macOS application to Gatekeeper; Apple notarization is a separate direct-distribution service check.
+3. Apple Developer ID identity (optional/deferred): would authenticate the macOS application to Gatekeeper; Apple notarization is a separate paid direct-distribution service layer and is not a first-release requirement.
 
 ## Ceremony environment
 
