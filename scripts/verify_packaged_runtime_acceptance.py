@@ -75,6 +75,158 @@ def _require_worker_success(payload: dict[str, Any], *, operation: str) -> None:
         )
 
 
+def _load_expected_model(catalog_path: Path, model_id: str) -> dict[str, Any]:
+    try:
+        document = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("expected model trust catalog is unavailable") from exc
+    if not isinstance(document, dict):
+        raise RuntimeError("expected model trust catalog is invalid")
+    raw_models = document.get("models")
+    if not isinstance(raw_models, list):
+        raise RuntimeError("expected model trust catalog omitted models")
+    match = next(
+        (
+            item
+            for item in raw_models
+            if isinstance(item, dict) and item.get("model_id") == model_id
+        ),
+        None,
+    )
+    if match is None:
+        raise RuntimeError("expected model trust catalog omitted qualified model")
+    return match
+
+
+def _validate_policy_receipt(
+    model_dir: Path,
+    *,
+    expected_model: dict[str, Any],
+) -> tuple[Path, dict[str, Any]]:
+    manifest_path = model_dir / "registry" / "faster-whisper" / "tiny.json"
+    try:
+        document = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("packaged trusted model manifest is unavailable") from exc
+    if not isinstance(document, dict):
+        raise RuntimeError("packaged trusted model manifest is invalid")
+    revision = expected_model.get("revision")
+    files = expected_model.get("files")
+    if not isinstance(revision, str) or not isinstance(files, list) or not files:
+        raise RuntimeError("expected model trust entry is invalid")
+    policy = document.get("policy_trust")
+    if not isinstance(policy, dict):
+        raise RuntimeError("packaged model install omitted policy trust receipt")
+    expected_total = sum(
+        item.get("size_bytes", 0)
+        for item in files
+        if isinstance(item, dict) and isinstance(item.get("size_bytes"), int)
+    )
+    if (
+        document.get("resolved_revision") != revision
+        or policy.get("model_id") != "tiny"
+        or policy.get("revision") != revision
+        or policy.get("verification") != "scholion_curated_sha256_v1"
+        or policy.get("verified_files") != len(files)
+        or policy.get("total_bytes") != expected_total
+    ):
+        raise RuntimeError("packaged model policy receipt does not match reviewed policy")
+    return manifest_path, document
+
+
+def _bridge_request(
+    runtime: Path,
+    *,
+    env: dict[str, str],
+    request_id: str,
+    method: str,
+    params: dict[str, object],
+) -> dict[str, Any]:
+    return _run_runtime(
+        runtime,
+        "bridge",
+        env=env,
+        payload={
+            "protocol_version": 1,
+            "request_id": request_id,
+            "method": method,
+            "params": params,
+        },
+    )
+
+
+def _qualify_legacy_policy_migration(
+    runtime: Path,
+    *,
+    env: dict[str, str],
+    input_path: Path,
+    manifest_path: Path,
+    manifest: dict[str, Any],
+) -> None:
+    revision = manifest.get("resolved_revision")
+    if not isinstance(revision, str) or not revision:
+        raise RuntimeError("packaged model manifest omitted resolved revision")
+    legacy = dict(manifest)
+    legacy["policy_trust"] = None
+    manifest_path.write_text(json.dumps(legacy, sort_keys=True), encoding="utf-8")
+
+    readiness = _bridge_request(
+        runtime,
+        env=env,
+        request_id="package-legacy-readiness",
+        method="processing.readiness",
+        params={"profile": "screening"},
+    )
+    result = readiness.get("result")
+    if (
+        readiness.get("ok") is not True
+        or not isinstance(result, dict)
+        or result.get("model_policy_enforced") is not True
+        or not isinstance(result.get("model_policy_trust"), dict)
+        or result["model_policy_trust"].get("tiny") is not False
+    ):
+        raise RuntimeError("packaged legacy model was not reported as untrusted")
+    models = result.get("models")
+    tiny = next(
+        (
+            item
+            for item in models
+            if isinstance(models, list)
+            and isinstance(item, dict)
+            and item.get("model_id") == "tiny"
+        ),
+        None,
+    )
+    if tiny is None or tiny.get("installed") is not True:
+        raise RuntimeError("packaged legacy model disappeared from inventory")
+
+    preflight = _bridge_request(
+        runtime,
+        env=env,
+        request_id="package-legacy-preflight",
+        method="processing.preflight",
+        params={
+            "input_path": str(input_path),
+            "profile": "screening",
+            "strategy_id": "tiny-cpu-int8",
+        },
+    )
+    if preflight.get("ok") is not False or preflight.get("result") is not None:
+        raise RuntimeError("packaged legacy model authorized new execution admission")
+
+    removal = _run_runtime(
+        runtime,
+        "processing-worker",
+        env=env,
+        payload={
+            "task_id": "package-remove-legacy-tiny",
+            "kind": "model_remove",
+            "model_id": "tiny",
+            "expected_revision": revision,
+        },
+    )
+    _require_worker_success(removal, operation="legacy model removal")
+
 def _words(text: str) -> set[str]:
     return set(re.findall(r"[^\W\d_]+", text.lower(), flags=re.UNICODE))
 
@@ -174,8 +326,18 @@ def _workspace_context(
     return nullcontext(resolved)
 
 
-def verify(runtime: Path, *, workspace_root: Path | None = None) -> None:
+def verify(
+    runtime: Path,
+    *,
+    workspace_root: Path | None = None,
+    model_trust_catalog: Path | None = None,
+) -> None:
     runtime = runtime.expanduser().resolve(strict=True)
+    expected_model = (
+        None
+        if model_trust_catalog is None
+        else _load_expected_model(model_trust_catalog.resolve(strict=True), "tiny")
+    )
     if not runtime.is_file():
         raise RuntimeError("packaged runtime executable is missing")
 
@@ -212,6 +374,12 @@ def verify(runtime: Path, *, workspace_root: Path | None = None) -> None:
             },
         )
         _require_worker_success(install, operation="model install")
+        policy_manifest: tuple[Path, dict[str, Any]] | None = None
+        if expected_model is not None:
+            policy_manifest = _validate_policy_receipt(
+                Path(env["SCHOLION_MODEL_DIR"]),
+                expected_model=expected_model,
+            )
 
         offline_env = dict(env)
         offline_env.update(
@@ -251,6 +419,16 @@ def verify(runtime: Path, *, workspace_root: Path | None = None) -> None:
                     f"packaged transcription omitted {suffix} publication"
                 )
 
+        if policy_manifest is not None:
+            manifest_path, manifest = policy_manifest
+            _qualify_legacy_policy_migration(
+                runtime,
+                env=env,
+                input_path=input_path,
+                manifest_path=manifest_path,
+                manifest=manifest,
+            )
+
         print(
             "accepted packaged Scholion runtime: real JFK transcription, offline inference, "
             "canonical provenance, and deterministic publications"
@@ -267,8 +445,17 @@ def main() -> int:
         type=Path,
         help="Retain acceptance state under this empty directory for lifecycle checks.",
     )
+    parser.add_argument(
+        "--model-trust-catalog",
+        type=Path,
+        help="Reviewed model policy expected to be enforced by this packaged runtime.",
+    )
     arguments = parser.parse_args()
-    verify(arguments.runtime, workspace_root=arguments.workspace_root)
+    verify(
+        arguments.runtime,
+        workspace_root=arguments.workspace_root,
+        model_trust_catalog=arguments.model_trust_catalog,
+    )
     return 0
 
 

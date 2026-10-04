@@ -9,11 +9,14 @@ on:
       - "frontend/package.json"
       - "frontend/package-lock.json"
       - "packaging/media-tools.json"
+      - "packaging/release-trust/**"
       - "scripts/build_desktop_runtime.py"
       - "scripts/build_release_provenance.py"
       - "scripts/prepare_managed_media_tools.py"
+      - "scripts/prepare_release_trust_inputs.py"
       - "scripts/scholion_runtime_entry.py"
       - "scripts/verify_packaged_media_tools.py"
+      - "scripts/verify_packaged_release_trust_inputs.py"
       - "scripts/verify_packaged_runtime_acceptance.py"
       - "scripts/verify_cross_platform_media_acceptance.py"
       - "src/scholion/**"
@@ -27,11 +30,14 @@ on:
       - "frontend/package.json"
       - "frontend/package-lock.json"
       - "packaging/media-tools.json"
+      - "packaging/release-trust/**"
       - "scripts/build_desktop_runtime.py"
       - "scripts/build_release_provenance.py"
       - "scripts/prepare_managed_media_tools.py"
+      - "scripts/prepare_release_trust_inputs.py"
       - "scripts/scholion_runtime_entry.py"
       - "scripts/verify_packaged_media_tools.py"
+      - "scripts/verify_packaged_release_trust_inputs.py"
       - "scripts/verify_packaged_runtime_acceptance.py"
       - "scripts/verify_cross_platform_media_acceptance.py"
       - "src/scholion/**"
@@ -109,10 +115,18 @@ jobs:
           --disable-pip
           --progress-spinner off
 
+      - name: Prepare reviewed production trust inputs
+        run: >-
+          uv run --no-sync python scripts/prepare_release_trust_inputs.py
+          --update-key-catalog packaging/release-trust/update-keys.json
+          --model-trust-catalog packaging/release-trust/model-trust.json
+          --output build/release-trust-inputs
+
       - name: Build managed Scholion runtime without dependency resync
         run: >-
           uv run --no-sync python scripts/build_desktop_runtime.py
           --media-tools-dir build/managed-media-tools
+          --release-trust-dir build/release-trust-inputs
 
       - name: Reject development tooling from frozen runtime
         shell: python
@@ -140,6 +154,18 @@ jobs:
             --runtime "$runtime" \
             --evidence build/managed-media-tools/managed-media-tools.json
 
+      - name: Prove frozen production trust custody before bundling
+        shell: bash
+        run: |
+          if [[ "${RUNNER_OS}" == "Windows" ]]; then
+            runtime="frontend/src-tauri/resources/runtime/scholion-runtime.exe"
+          else
+            runtime="frontend/src-tauri/resources/runtime/scholion-runtime"
+          fi
+          uv run --no-sync python scripts/verify_packaged_release_trust_inputs.py \
+            --runtime "$runtime" \
+            --prepared-dir build/release-trust-inputs
+
       - name: Prove frozen runtime before bundling
         shell: bash
         run: |
@@ -148,7 +174,8 @@ jobs:
           else
             runtime="frontend/src-tauri/resources/runtime/scholion-runtime"
           fi
-          uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py "$runtime"
+          uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py "$runtime" \
+            --model-trust-catalog packaging/release-trust/model-trust.json
 
       - name: Install locked frontend dependencies
         working-directory: frontend
@@ -206,7 +233,11 @@ jobs:
           uv run --no-sync python scripts/verify_packaged_media_tools.py \
             --runtime "$runtime" \
             --evidence build/managed-media-tools/managed-media-tools.json
-          uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py "$runtime"
+          uv run --no-sync python scripts/verify_packaged_release_trust_inputs.py \
+            --runtime "$runtime" \
+            --prepared-dir build/release-trust-inputs
+          uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py "$runtime" \
+            --model-trust-catalog packaging/release-trust/model-trust.json
           hdiutil detach "$mount_point"
           trap - EXIT
 
@@ -223,6 +254,7 @@ jobs:
           $retainedWorkspace = Join-Path $env:RUNNER_TEMP "scholion-retained-user-workspace"
           $reinstallWorkspace = Join-Path $env:RUNNER_TEMP "scholion-reinstall-acceptance"
           $mediaEvidence = "build/managed-media-tools/managed-media-tools.json"
+          $trustEvidence = "build/release-trust-inputs"
 
           function Install-ScholionPreview {
             $process = Start-Process -FilePath $installer.FullName -ArgumentList @("/S", "/D=$installDir") -Wait -PassThru
@@ -280,7 +312,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "Installed Scholion managed media-tool qualification failed"
           }
-          uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py $runtime --workspace-root $retainedWorkspace
+          uv run --no-sync python scripts/verify_packaged_release_trust_inputs.py --runtime $runtime --prepared-dir $trustEvidence
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installed Scholion production trust-input qualification failed"
+          }
+          uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py $runtime --workspace-root $retainedWorkspace --model-trust-catalog packaging/release-trust/model-trust.json
           if ($LASTEXITCODE -ne 0) {
             throw "Installed Scholion runtime acceptance failed"
           }
@@ -303,7 +339,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "Reinstalled Scholion managed media-tool qualification failed"
           }
-          uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py $runtime --workspace-root $reinstallWorkspace
+          uv run --no-sync python scripts/verify_packaged_release_trust_inputs.py --runtime $runtime --prepared-dir $trustEvidence
+          if ($LASTEXITCODE -ne 0) {
+            throw "Reinstalled Scholion production trust-input qualification failed"
+          }
+          uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py $runtime --workspace-root $reinstallWorkspace --model-trust-catalog packaging/release-trust/model-trust.json
           if ($LASTEXITCODE -ne 0) {
             throw "Reinstalled Scholion runtime acceptance failed"
           }
@@ -355,6 +395,9 @@ jobs:
           media_evidence = Path("build/managed-media-tools/managed-media-tools.json")
           media_evidence_bytes = media_evidence.read_bytes()
           (report_dir / "managed-media-tools.json").write_bytes(media_evidence_bytes)
+          trust_evidence = Path("build/release-trust-inputs/release-trust-inputs.json")
+          trust_evidence_bytes = trust_evidence.read_bytes()
+          (report_dir / "release-trust-inputs.json").write_bytes(trust_evidence_bytes)
           platform_lifecycle = (
               "windows-install-uninstall-reinstall-preserves-user-state"
               if os.environ["RUNNER_OS"] == "Windows"
@@ -368,9 +411,13 @@ jobs:
               "platform_lifecycle": platform_lifecycle,
               "release_ready": False,
               "managed_media_tools_evidence_sha256": hashlib.sha256(media_evidence_bytes).hexdigest(),
+              "release_trust_inputs_evidence_sha256": hashlib.sha256(trust_evidence_bytes).hexdigest(),
               "qualified": {
                   "managed_scholion_runtime": True,
                   "managed_ffmpeg_ffprobe_custody": True,
+                  "production_public_trust_inputs_bundled": True,
+                  "packaged_model_policy_enforced": True,
+                  "legacy_untrusted_model_fails_closed": True,
                   "real_jfk_transcription_through_frozen_runtime": True,
                   "offline_inference_after_model_install": True,
                   "canonical_evidence_and_exports": True,
@@ -383,8 +430,7 @@ jobs:
                   "artifact_sha256": True,
               },
               "remaining_release_gates": [
-                  "bundle the reviewed faster-whisper model-trust catalog",
-                  "wire the production Ed25519 verifier and approved public update-key set",
+                  "qualify the production-key signed update fixture",
                   "implement and qualify native update activation",
                   "apply and verify Windows code signing and macOS signing/notarization",
                   "complete representative-device qualification under issue #114",
@@ -407,6 +453,9 @@ jobs:
           --commit "${GITHUB_SHA}"
           --runner-os "${RUNNER_OS}"
           --runner-arch "${SCHOLION_RUNNER_ARCH}"
+          --input packaging/release-trust/update-keys.json
+          --input packaging/release-trust/model-trust.json
+          --input build/release-trust-inputs/release-trust-inputs.json
           --output release-preview/provenance.json
 
       - name: Upload exact preview package and qualification evidence
@@ -418,6 +467,7 @@ jobs:
             frontend/src-tauri/target/release/bundle/**/*.exe
             release-preview/SHA256SUMS
             release-preview/managed-media-tools.json
+            release-preview/release-trust-inputs.json
             release-preview/qualification.json
             release-preview/provenance.json
           if-no-files-found: error
