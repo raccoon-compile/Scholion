@@ -25,7 +25,7 @@ The implementation status below is deliberately conservative. Repository mechani
 
 PR #170 completed the native verifier plumbing and audited lockfile. PR #172 completed deterministic production trust-input custody. PR #180 added deterministic public-key catalog construction plus the external release-key ceremony runbook. Source/development builds still keep update checking fail-closed/off when no packaged production public catalog is present.
 
-**Real production gate still required:** #177 must create the real production Ed25519 keypair under external custody, derive/review the public verification material and catalog, and produce a production-shaped signature without exposing the private key to Git, GitHub, CI, the application, or ChatGPT. #168 must then qualify the production-shaped candidate using that real public catalog.
+**Real production trust gate completed:** #177 established the production Ed25519 keypair under external custody and the reviewed public catalog; #178 established the immutable faster-whisper policy; PR #207 proved those exact public inputs inside installed/mounted Windows/macOS candidates and bound them into provenance; and PR #209 proves an externally produced `release-2026-a` signature through the packaged native verifier, including payload/signature mutation rejection, unknown-key rejection, normal update-check authorization, and exact signed staging. The private signer never enters Git, GitHub Actions, application resources, logs, or fixtures.
 
 The private signing key is intentionally outside the repository and application. `scripts/build_release_metadata.py` produces deterministic exact payload bytes for an offline signer and can wrap only the resulting public signature. There is no repository tool that accepts or stores a private signing key.
 
@@ -172,17 +172,16 @@ Issue #145 completed the post-#144 redundancy re-audit, production verifier/key-
 
 PR #164 then established the Windows/macOS managed frozen-runtime and exact unsigned preview-package boundary with real packaged-media acceptance. PR #166 completed deterministic package provenance and evidence-safe Windows install/uninstall/reinstall qualification while keeping the macOS DMG lifecycle claim honest. PR #167 completed reviewed packaged FFmpeg/FFprobe custody, removed frozen-runtime dependence on ambient host PATH, bound media-tool identity into release evidence/provenance, and preserved exact reviewed macOS media-tool bytes after PyInstaller processing.
 
-PR #170 completed strict native Ed25519 verification plumbing. PR #172 completed deterministic public production-trust-input custody/overlay. PR #180 completed repository-side public-key catalog construction and documented the external private-key ceremony. Those tranches are complete repository/artifact mechanics. They do not make the unsigned preview artifacts public releases and do not substitute for the real #177/#178 trust inputs. `release_ready` remains false.
+PR #170 completed strict native Ed25519 verification plumbing. PR #172 completed deterministic public production-trust-input custody/overlay. PR #180 completed repository-side public-key catalog construction and documented the external private-key ceremony. #177 and #178 supplied the real release-key/model-policy inputs; PR #207 qualified them in the packaged candidates; and PR #209 qualifies the real production-key signature path without exposing the private signer. The unsigned preview artifacts are still not public releases. `release_ready` remains false until later OS-signing, activation, representative-device, and publication gates complete.
 
 ## Ordered residual release work
 
 The remaining **MVP release gates** are narrow and concrete:
 
-1. finish #168 production-shaped qualification with the completed #177 release-key material and #178 reviewed faster-whisper policy;
-2. complete #173 Windows signing and macOS Developer ID signing/notarization;
-3. complete #174 native update activation so only an already trusted, OS-signed candidate can be executed;
-4. complete #114 representative packaged-device/offline/repair/update qualification; and
-5. complete #175 by publishing the MVP with final checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same release candidate.
+1. complete #173 Windows signing and macOS Developer ID signing/notarization;
+2. complete #174 native update activation so only an already trusted, OS-signed candidate can be executed;
+3. complete #114 representative packaged-device/offline/repair/update qualification; and
+4. complete #175 by publishing the MVP with final checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same release candidate.
 
 Official Linux binary distribution remains blocked by #135 until a stable/reviewed upstream-supported Tauri stack removes the affected dependency generation.
 

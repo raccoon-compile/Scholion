@@ -12,18 +12,18 @@ The package/runtime side is also substantially complete:
 - PR #170 completed strict native Ed25519 update verification; and
 - PR #172 completed deterministic custody, package handoff, and provenance binding for reviewed production trust inputs.
 
-The remaining #168 work is now about **real production trust material** and **production-shaped qualification**. It is not missing application architecture.
+#168 production trust qualification is complete. The real release key/public catalog, reviewed faster-whisper policy, production-shaped package binding, packaged model admission, and production-key signed update verification/staging path have all been qualified without moving the private signer into CI.
 
 `release_ready` remains false.
 
 ## Current release-trust split
 
-The remaining work is tracked explicitly:
+The completed trust chain and remaining release gates are explicit:
 
-- **#177** owns creation/custody of the real Scholion Ed25519 release-signing key and the reviewed public `update-keys.json` catalog.
-- **#178** owns live upstream review of the first-release faster-whisper `tiny`, `small`, and `medium` snapshots, including immutable revisions, licenses/model cards, complete file sets, sizes, hashes, and engine compatibility.
-- **#168** remains the parent gate that binds those exact public inputs into a production-shaped package and proves update/model behavior end to end.
-- **#173** follows #168 for Windows code signing and macOS Developer ID signing/notarization.
+- **#177** completed creation/custody of the real Scholion Ed25519 release-signing key and reviewed public `update-keys.json` catalog.
+- **#178** completed live review of the first-release faster-whisper `tiny`, `small`, and `medium` snapshots, including immutable revisions, licenses/model cards, complete file sets, sizes, hashes, and engine compatibility.
+- **#168** is complete: PR #207 bound those exact public inputs into installed/mounted Windows/macOS candidates and provenance; PR #209 qualifies the externally produced `release-2026-a` signature through the packaged native verifier, mutation/unknown-key rejection, update authorization, and exact staging.
+- **#173** is the next gate for Windows code signing and macOS Developer ID signing/notarization.
 - **#174** follows platform signing for explicit user-authorized native activation of a trusted staged update.
 - **#114** remains representative real-device qualification.
 - **#175** owns final production release publication, including checksums, provenance, SBOM, signatures, signed update metadata, and GitHub Release artifacts.
@@ -173,27 +173,23 @@ The generator measures bytes. It does not confer trust.
 
 These items cannot be truthfully completed by repository code alone:
 
-- creating and safeguarding the real private Scholion release-signing key (#177);
-- live review and approval of the immutable faster-whisper revisions/licenses (#178);
-- generating/reviewing the final public-key resource from the selected release key;
-- creating production-shaped signed update fixtures without exposing the private signer to CI;
-- Windows/macOS platform-signing credentials (#173); and
-- representative native qualification using the actual packaged key/catalog (#114).
+The real private Scholion release-signing key (#177), reviewed immutable faster-whisper policy (#178), final public-key resource, and production-key signed update qualification fixture now exist and have been exercised through the packaged Windows/macOS trust boundary without exposing the private signer to CI.
 
-They are release inputs and evidence, not missing application architecture.
+Still external to #168 are Windows/macOS platform-signing credentials (#173) and representative native qualification (#114). Those are later release inputs/evidence, not missing application architecture.
 
 ## Release qualification for the real inputs
 
-Once the actual reviewed inputs exist, the Windows/macOS candidate must prove all of the following before #168 is complete:
+The completed #168 qualification proves all of the following:
 
 - the prepared input evidence matches the approved source bytes exactly;
 - the frozen runtime contains the exact reviewed model catalog and public-key catalog;
 - the mounted macOS DMG and installed Windows NSIS package preserve those exact bytes;
-- the native verifier accepts a production-shaped valid signature and rejects mutation, wrong/unknown keys, malformed signatures, and malformed catalogs;
+- the packaged native verifier accepts the externally produced production-key signature and rejects payload/signature mutation and unknown keys;
+- the normal update service authorizes the signed production-shaped fixture and stages exact bytes under the signed size/SHA-256 contract;
 - model installation/revalidation uses the immutable catalog revision and complete file-set/hash policy;
 - offline transcription succeeds after the reviewed model is installed;
 - legacy locally valid but now-untrusted models remain inspectable/removable but cannot be admitted for a new trusted run; and
-- deterministic package provenance names and hashes the exact trust inputs bound to that candidate.
+- deterministic package provenance names and hashes the exact trust inputs, qualification payload, and public signature bound to that candidate.
 
 `release_ready` remains false until the later release gates are complete.
 
