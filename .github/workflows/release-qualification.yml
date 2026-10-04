@@ -458,7 +458,7 @@ jobs:
               },
               "remaining_release_gates": [
                   "implement and qualify native update activation",
-                  "apply and verify Windows code signing and macOS signing/notarization",
+                  "apply and verify Windows code signing; qualify macOS project verification and non-notarized disclosure",
                   "complete representative-device qualification under issue #114",
               ],
               "artifacts": artifact_records,
