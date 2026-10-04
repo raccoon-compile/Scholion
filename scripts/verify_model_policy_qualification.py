@@ -98,6 +98,84 @@ def _rewrite_as_legacy_install(
     )
 
 
+def _qualify_trusted_install(
+    manager: ModelManager,
+    fixture: Path,
+    trusted_spec,
+) -> tuple[object, dict[str, object]]:
+    manifest = manager.install("tiny")
+    if manifest.resolved_revision != trusted_spec.revision:
+        raise RuntimeError("managed install did not resolve the trusted revision")
+    if manifest.policy_trust is None:
+        raise RuntimeError("managed install omitted policy trust evidence")
+    if manifest.policy_trust.verified_files != len(trusted_spec.files):
+        raise RuntimeError("managed install verified the wrong model file count")
+    if not manager.is_policy_trusted("tiny"):
+        raise RuntimeError("installed model did not revalidate as policy trusted")
+    if manager.resolved_revision("tiny") != trusted_spec.revision:
+        raise RuntimeError("execution admission lost the trusted model revision")
+
+    configuration = CpuEngineConfiguration(
+        engine="faster-whisper",
+        model="tiny",
+        device="cpu",
+        compute_type="int8",
+        cpu_threads=2,
+        beam_size=1,
+        language="en",
+        model_cache_path=manager.cache_root,
+        model_revision=trusted_spec.revision,
+    )
+    with _offline_hub_environment():
+        transcript = FasterWhisperTranscriber().open_session(configuration).transcribe(
+            fixture
+        )
+    recognized = _words(" ".join(segment.text for segment in transcript.segments))
+    matches = recognized & _EXPECTED_WORDS
+    if len(matches) < _MIN_EXPECTED_WORDS:
+        raise RuntimeError("offline trusted-model transcription was too weak")
+
+    return manifest, {
+        "engine_version": transcript.engine_version,
+        "segments": len(transcript.segments),
+        "expected_words_matched": len(matches),
+        "hub_offline": True,
+    }
+
+
+def _qualify_legacy_migration(
+    manager: ModelManager,
+    store: LocalFileManager,
+    expected_revision: str,
+) -> dict[str, object]:
+    _rewrite_as_legacy_install(manager, store, "tiny")
+    legacy_item = manager.inventory()[0]
+    if not legacy_item.installed or legacy_item.policy_trusted:
+        raise RuntimeError(
+            "legacy managed model was not visible as installed-but-untrusted"
+        )
+
+    try:
+        manager.resolved_revision("tiny")
+    except ModelManagementError:
+        execution_rejected = True
+    else:
+        raise RuntimeError("legacy untrusted model authorized a new execution")
+
+    removed = manager.remove("tiny")
+    if removed.resolved_revision != expected_revision:
+        raise RuntimeError("legacy model removal returned the wrong revision")
+    if manager.inventory()[0].installed:
+        raise RuntimeError("legacy model remained registered after removal")
+
+    return {
+        "visible": True,
+        "policy_trusted": False,
+        "execution_rejected": execution_rejected,
+        "removable": True,
+    }
+
+
 def verify_production_model_policy() -> dict[str, object]:
     repository_root = _repository_root()
     catalog_path = repository_root / "packaging" / "release-trust" / "model-trust.json"
@@ -119,84 +197,33 @@ def verify_production_model_policy() -> dict[str, object]:
             trust_catalog=trust_catalog,
             enforce_policy_trust=True,
         )
-
-        manifest = manager.install("tiny")
-        if manifest.resolved_revision != trusted_spec.revision:
-            raise RuntimeError("managed install did not resolve the trusted revision")
-        if manifest.policy_trust is None:
-            raise RuntimeError("managed install omitted policy trust evidence")
-        if manifest.policy_trust.verified_files != len(trusted_spec.files):
-            raise RuntimeError("managed install verified the wrong model file count")
-        if not manager.is_policy_trusted("tiny"):
-            raise RuntimeError("installed model did not revalidate as policy trusted")
-        if manager.resolved_revision("tiny") != trusted_spec.revision:
-            raise RuntimeError("execution admission lost the trusted model revision")
-
-        configuration = CpuEngineConfiguration(
-            engine="faster-whisper",
-            model="tiny",
-            device="cpu",
-            compute_type="int8",
-            cpu_threads=2,
-            beam_size=1,
-            language="en",
-            model_cache_path=manager.cache_root,
-            model_revision=trusted_spec.revision,
+        manifest, offline_evidence = _qualify_trusted_install(
+            manager,
+            fixture,
+            trusted_spec,
         )
-        with _offline_hub_environment():
-            transcript = FasterWhisperTranscriber().open_session(configuration).transcribe(
-                fixture
-            )
-        recognized = _words(" ".join(segment.text for segment in transcript.segments))
-        matches = recognized & _EXPECTED_WORDS
-        if len(matches) < _MIN_EXPECTED_WORDS:
-            raise RuntimeError("offline trusted-model transcription was too weak")
+        legacy_evidence = _qualify_legacy_migration(
+            manager,
+            store,
+            trusted_spec.revision,
+        )
 
-        _rewrite_as_legacy_install(manager, store, "tiny")
-        legacy_item = manager.inventory()[0]
-        if not legacy_item.installed or legacy_item.policy_trusted:
-            raise RuntimeError(
-                "legacy managed model was not visible as installed-but-untrusted"
-            )
-
-        try:
-            manager.resolved_revision("tiny")
-        except ModelManagementError:
-            execution_rejected = True
-        else:
-            raise RuntimeError("legacy untrusted model authorized a new execution")
-
-        removed = manager.remove("tiny")
-        if removed.resolved_revision != trusted_spec.revision:
-            raise RuntimeError("legacy model removal returned the wrong revision")
-        post_remove = manager.inventory()[0]
-        if post_remove.installed:
-            raise RuntimeError("legacy model remained registered after removal")
-
-        return {
-            "schema_version": 1,
-            "catalog_sha256": hashlib.sha256(catalog_payload).hexdigest(),
-            "trusted_install": {
-                "model_id": manifest.model_id,
-                "revision": manifest.resolved_revision,
-                "verification": manifest.policy_trust.verification,
-                "verified_files": manifest.policy_trust.verified_files,
-                "total_bytes": manifest.policy_trust.total_bytes,
-            },
-            "offline_transcription": {
-                "engine_version": transcript.engine_version,
-                "segments": len(transcript.segments),
-                "expected_words_matched": len(matches),
-                "hub_offline": True,
-            },
-            "legacy_migration": {
-                "visible": True,
-                "policy_trusted": False,
-                "execution_rejected": execution_rejected,
-                "removable": True,
-            },
-        }
-
+    policy_trust = manifest.policy_trust
+    if policy_trust is None:
+        raise RuntimeError("managed install lost policy trust evidence")
+    return {
+        "schema_version": 1,
+        "catalog_sha256": hashlib.sha256(catalog_payload).hexdigest(),
+        "trusted_install": {
+            "model_id": manifest.model_id,
+            "revision": manifest.resolved_revision,
+            "verification": policy_trust.verification,
+            "verified_files": policy_trust.verified_files,
+            "total_bytes": policy_trust.total_bytes,
+        },
+        "offline_transcription": offline_evidence,
+        "legacy_migration": legacy_evidence,
+    }
 
 def main() -> int:
     print(json.dumps(verify_production_model_policy(), indent=2, sort_keys=True))
