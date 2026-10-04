@@ -4,7 +4,7 @@ This is the **use-the-thing** guide.
 
 Scholion is a private, local-first workspace for recorded evidence. You do not need to understand CUDA, DuckDB, SQLite, model revisions, signatures, or desktop IPC to use it. Python owns application/evidence decisions so the desktop can speak in recordings, transcripts, speakers, searches, notes, playback, storage, updates, and evidence.
 
-Scholion is still pre-production. There is no public signed installer yet, so the supported path remains a source/developer checkout while the release milestone completes OS signing/notarization, native update activation, representative-device qualification, and final publication.
+Scholion is still pre-production. There is no public production installer yet, so the supported path remains a source/developer checkout while the release milestone completes Windows platform signing, the documented macOS open-source trust path, native update activation, representative-device qualification, and final publication.
 
 ## Pick the smallest setup
 
@@ -194,7 +194,7 @@ Current repository code supports:
 
 The first-release update endpoint is fixed by application policy. React cannot submit a URL, path, header, executable command, or installer argument. Metadata must pass signature, publication/expiry, stable-channel, platform, anti-rollback, and same-sequence equivocation checks. Staged bytes must match the signed size/SHA-256 exactly.
 
-A staged package is **not installed**. The strict native verifier, real production public-key/model policy, production-key signed fixture, and production-shaped Windows/macOS qualification are complete. What remains is OS signing/notarization, native activation of an already trusted staged candidate, representative-device qualification, and final publication.
+A staged package is **not installed**. The strict native verifier, real production public-key/model policy, production-key signed fixture, and production-shaped Windows/macOS qualification are complete. What remains is Windows platform signing plus macOS open-source distribution qualification, native activation of an already trusted staged candidate, representative-device qualification, and final publication. The macOS release is intentionally planned without Apple Developer ID notarization unless that paid platform service becomes funded.
 
 A manual update check is network activity. GitHub/CDN can observe ordinary connection metadata such as IP address and request time. Scholion sends no installation ID, recordings/transcripts/research content, hardware/model inventory, or behavioral telemetry.
 
@@ -228,8 +228,8 @@ See **[Semantic search](semantic-search.md)**.
 
 The application, packaging-preview, native verification, deterministic production trust-input custody, real production-key/model-policy qualification, and real Community-1 diarization foundations are complete. The remaining first-release sequence is:
 
-1. complete #173 Windows code signing and macOS Developer ID signing/notarization;
-2. complete #174 native activation of already trusted, OS-signed staged updates;
+1. complete #173 Windows code signing and the macOS non-notarized open-source distribution qualification/disclosure;
+2. complete #174 native activation of already trusted staged updates under each platform's applicable trust policy;
 3. complete #114 representative-device qualification, including CPU-only/accelerator task transport and offline/repair/update behavior; and
 4. complete #175 by publishing the final qualified MVP artifacts and evidence.
 
