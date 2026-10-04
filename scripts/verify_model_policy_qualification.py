@@ -86,7 +86,7 @@ def _rewrite_as_legacy_install(
     store: LocalFileManager,
     model_id: str,
 ) -> None:
-    manifest_path = manager.registry_root / "faster-whisper" / f"{model_id}.json"
+    manifest_path = manager.registry_root / f"{model_id}.json"
     document = json.loads(store.read_file(manifest_path).decode("utf-8"))
     if not isinstance(document, dict) or document.get("policy_trust") is None:
         raise RuntimeError("trusted install did not record policy evidence")
