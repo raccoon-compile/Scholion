@@ -71,7 +71,7 @@ The user-facing copy states the network truth plainly: GitHub/CDN still sees ord
 
 The generator measures bytes. It does not decide that a model is trustworthy.
 
-**Production gate still required:** #178 must deliberately review the first-release faster-whisper `tiny`, `small`, and `medium` immutable revisions, licenses, file sets, regression behavior, and generated entries. #168 must then bundle and qualify that real catalog in the production-shaped package. Development cache contents, guessed hashes, `main`, and `HEAD` are not acceptable trust inputs.
+**Production model review completed under #178:** the first-release faster-whisper `tiny`, `small`, and `medium` revisions, licenses, complete file sets, hashes, engine compatibility, managed install/revalidation, offline inference, and legacy-untrusted admission behavior are qualified against the reviewed catalog. #168 must still bind and qualify those exact public inputs in the production-shaped Windows/macOS package. Development cache contents, guessed hashes, `main`, and `HEAD` remain unacceptable trust inputs.
 
 The exact review sequence is frozen in **[Production trust inputs](production-trust-inputs.md)** so the release process does not invent model policy ad hoc.
 
@@ -178,7 +178,7 @@ PR #170 completed strict native Ed25519 verification plumbing. PR #172 completed
 
 The remaining **MVP release gates** are narrow and concrete:
 
-1. complete #177 external production release-key custody/public catalog and #178 live review of the first-release faster-whisper `tiny`, `small`, and `medium` snapshots, then finish #168 production-shaped qualification with those real inputs;
+1. finish #168 production-shaped qualification with the completed #177 release-key material and #178 reviewed faster-whisper policy;
 2. complete #173 Windows signing and macOS Developer ID signing/notarization;
 3. complete #174 native update activation so only an already trusted, OS-signed candidate can be executed;
 4. complete #114 representative packaged-device/offline/repair/update qualification; and

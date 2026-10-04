@@ -19,8 +19,10 @@ actually reason about.
 
 [Diagram source (Mermaid)](../diagrams/src/model-management.mmd)
 
-Application composition now loads a packaged `model-trust.json` from
-`scholion.supply_chain` when one is present. A build that contains that reviewed catalog
+Application composition loads a packaged `model-trust.json` from
+`scholion.supply_chain` when one is present. The reviewed first-release source policy is
+`packaging/release-trust/model-trust.json`; #172 installs those exact reviewed bytes into
+the frozen runtime for production-shaped packaging. A build that contains that reviewed catalog
 automatically constructs `ModelManager` with policy enforcement enabled. A source or
 development build with no packaged catalog retains the existing local/provider
 revalidation path. There is no second runtime switch that can silently ship a catalog

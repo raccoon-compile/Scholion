@@ -22,7 +22,7 @@ Scholion inspects effective CPU/memory and accelerator topology before admitting
 
 Project-owned model policy trust is now implemented. When a reviewed `model-trust.json` is bundled, `ModelManager` pins the exact approved upstream revision, verifies the complete file set/size/SHA-256 before registration and admission, records policy evidence separately from provider-local validation, and re-verifies current trust later. Legacy locally valid models remain visible/removable but cannot authorize new transcription under enforcement until a trusted reinstall succeeds.
 
-The repository intentionally still contains **no guessed production faster-whisper trust entries**. The machinery and review procedure are complete; #178 owns the real immutable revisions, licenses, regression evidence, and measured entries for the first-release `tiny`, `small`, and `medium` model set.
+The reviewed first-release faster-whisper policy now lives at `packaging/release-trust/model-trust.json`. `tiny`, `small`, and `medium` are pinned to human-reviewed immutable Systran revisions with complete file-set/size/SHA-256 evidence. #178 qualifies the real managed install/revalidation path, offline inference, and legacy installed-but-untrusted fail-closed migration behavior; #168 still owns binding those exact public inputs into the production-shaped Windows/macOS candidate.
 
 Packaged Windows/macOS preview runtimes now own their FFmpeg/FFprobe dependency instead of inheriting ambient host PATH. PR #167 pins reviewed platform inputs, validates exact bytes, binds media-tool identity into release evidence, and makes frozen Scholion resolve only its bundled `media-tools` directory. Source/development mode may still use PATH for ordinary developer ergonomics. These custody controls are strong provenance and dependency-boundary controls, not an OS parser sandbox.
 
@@ -70,7 +70,7 @@ The desktop now also has an explicit **Updates** workspace. Manual checks use on
 | Capability | Authority | Desktop status | Remaining MVP/release work |
 |---|---|---|---|
 | Machine/resource policy | Python runner/admission | implemented | representative-device calibration |
-| Model custody | managed revision + project policy verification | implemented mechanics | #178 real catalog review/provisioning + #168 production-shaped qualification |
+| Model custody | managed revision + reviewed project policy verification | implemented + production policy reviewed | #168 production-shaped package qualification |
 | Import/locations | durable permissions/discovery | implemented | optional settings polish |
 | Processing | plan, execute, checkpoint, resume/retry | implemented | representative native task qualification under #114 |
 | Embedded audio tracks | Python probe/selector/planner + FFmpeg exact map | implemented | future proven multi-track playback; separate-file sync remains out of scope |
@@ -168,9 +168,8 @@ PR #170/#172/#180 subsequently completed native update verification, determinist
 
 The current tranche is deliberately narrower than “finish packaging.” The verifier and custody machinery are already merged. What remains is to:
 
-- complete #177 by generating the real production Ed25519 keypair in a controlled external environment, deciding its custody/recovery/rotation approach, deriving the public verification material, building the reviewed public catalog, and producing a production-shaped signature without exposing the private key to GitHub/CI/the app;
-- complete #178 by deliberately selecting and reviewing the real faster-whisper `tiny`, `small`, and `medium` immutable revisions, licenses, complete snapshot file sets/hashes, and regression behavior;
-- bundle those approved public inputs through the deterministic #172 custody path; and
+- keep the completed #177 production release-key ceremony and #178 reviewed faster-whisper policy as fixed release inputs;
+- keep those approved public inputs flowing through the deterministic #172 custody path; and
 - finish #168 by qualifying the production-shaped package end to end with the actual public catalog/model policy, including valid/invalid signature behavior, model admission/revalidation, offline behavior, and exact package/provenance identity.
 
 This tranche must not invent a private signing key, guess model hashes, or promote whichever development model cache happens to exist. The generator measures bytes; human review confers policy trust.
@@ -237,6 +236,6 @@ A future notebook page should live in authoritative SQLite as its own research-d
 
 The rule is now intentionally boring:
 
-**#177 release-key ceremony + #178 model review → finish #168 production-shaped qualification → #173 sign/notarize → #174 activate updates natively → #114 qualify representative devices → #175 publish the MVP release.**
+**finish #168 production-shaped qualification → #173 sign/notarize → #174 activate updates natively → #114 qualify representative devices → #175 publish the MVP release.**
 
 Do not reopen completed product, lifecycle/provenance, native-verifier/custody, or managed-media tranches merely because later research or portability features are interesting. Do not call production secrets, real upstream trust decisions, OS signing, native activation, or representative-device evidence “implemented” until they actually exist.
