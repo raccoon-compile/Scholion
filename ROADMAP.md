@@ -4,13 +4,13 @@ Scholion is a **private, local-first workspace for recorded evidence**. Its job 
 
 Modern Scholion restarted on August 2, 2026. The MVP product foundation is now substantially built: import, local processing, explicit embedded-audio-track choice, canonical evidence, lexical/semantic/hybrid retrieval, verified navigation, durable notes/tags/collections/saved searches, transcript and speaker tools, native source playback, lifecycle/retention controls, contextual guidance, accessibility themes, and signed update/model-trust mechanics all exist in repository code.
 
-Issue #145 is complete. PR #164 established the Windows/macOS packaging foundation, PR #166 completed deterministic release provenance plus evidence-safe package lifecycle qualification, PR #167 completed repository-owned packaged FFmpeg/FFprobe custody, PR #170 exact-pinned and wired strict native Ed25519 update verification, PR #172 added deterministic production trust-input custody, PR #180 added public-key catalog/ceremony support, PR #183 restored optional Community-1 diarization on the patched Lightning 2.6.6+ boundary, PR #207 qualified the real reviewed public key/model policy inside installed/mounted Windows/macOS candidates, and PR #209 qualifies an externally produced `release-2026-a` signature through the packaged native verifier and trusted staging path. Scholion now has a locked/audited managed frozen runtime, reviewed-master native icon generation, exact unsigned Windows NSIS and macOS DMG preview packages, real packaged-runtime acceptance, deterministic package evidence, evidence-preserving Windows uninstall/reinstall qualification, self-contained reviewed media-tool custody, a fail-closed native verification path using the real production public key, production model-policy enforcement, and a real-model-qualified local anonymous diarization path. The active release tranche is now **OS signing/notarization (#173)**. Native update activation and representative-device qualification follow.
+Issue #145 is complete. PR #164 established the Windows/macOS packaging foundation, PR #166 completed deterministic release provenance plus evidence-safe package lifecycle qualification, PR #167 completed repository-owned packaged FFmpeg/FFprobe custody, PR #170 exact-pinned and wired strict native Ed25519 update verification, PR #172 added deterministic production trust-input custody, PR #180 added public-key catalog/ceremony support, PR #183 restored optional Community-1 diarization on the patched Lightning 2.6.6+ boundary, PR #207 qualified the real reviewed public key/model policy inside installed/mounted Windows/macOS candidates, and PR #209 qualifies an externally produced `release-2026-a` signature through the packaged native verifier and trusted staging path. Scholion now has a locked/audited managed frozen runtime, reviewed-master native icon generation, exact unsigned Windows NSIS and macOS DMG preview packages, real packaged-runtime acceptance, deterministic package evidence, evidence-preserving Windows uninstall/reinstall qualification, self-contained reviewed media-tool custody, a fail-closed native verification path using the real production public key, production model-policy enforcement, and a real-model-qualified local anonymous diarization path. The active release tranche is now **platform distribution trust (#173)**. Native update activation and representative-device qualification follow.
 
 ![Scholion roadmap 🗺️✨ diagram](./docs/diagrams/generated/scholion-roadmap.svg)
 
 [Diagram source (Mermaid)](./docs/diagrams/src/scholion-roadmap.mmd)
 
-Text fallback: Scholion already spans local media, reliable transcription, canonical evidence, private retrieval, verified navigation, durable research, native desktop workflows, lifecycle/playback, real-model-qualified anonymous diarization, signed update/model-trust mechanics, hosted cross-platform real-media acceptance, completed pre-packaging readiness, exact Windows/macOS preview-package qualification, deterministic release provenance, evidence-safe Windows package lifecycle, repository-owned packaged FFmpeg/FFprobe, strict native Ed25519 verification, deterministic production trust-input custody, production model-policy qualification, and real production-key signed update verification/staging. The next tranche is OS signing/notarization, followed by native update activation and representative physical-device qualification. Official Linux binary distribution remains separately blocked by issue #135.
+Text fallback: Scholion already spans local media, reliable transcription, canonical evidence, private retrieval, verified navigation, durable research, native desktop workflows, lifecycle/playback, real-model-qualified anonymous diarization, signed update/model-trust mechanics, hosted cross-platform real-media acceptance, completed pre-packaging readiness, exact Windows/macOS preview-package qualification, deterministic release provenance, evidence-safe Windows package lifecycle, repository-owned packaged FFmpeg/FFprobe, strict native Ed25519 verification, deterministic production trust-input custody, production model-policy qualification, and real production-key signed update verification/staging. The next tranche is Windows signing plus macOS open-source trust qualification, followed by native update activation and representative physical-device qualification. Official Linux binary distribution remains separately blocked by issue #135.
 
 # MVP foundation now
 
@@ -88,7 +88,7 @@ The desktop now also has an explicit **Updates** workspace. Manual checks use on
 | Architecture/redundancy | capability-blind transport + app-layer composition + one Research contract | re-audited after #144 | no known duplicate authority remains in current milestone |
 | Frontend tests | strict TS/build + Playwright/axe | primary surfaces including Updates covered | grow with features, avoid duplicated backend policy |
 | Update trust | exact-byte signed manifest + strict native Ed25519 verifier + deterministic public-input custody + fixed endpoint + rollback/expiry/equivocation + staging + UI | implemented mechanics | #177 real production key/public catalog + #168 production-shaped qualification; #174 later activation |
-| Packaging | managed frozen runtime + Tauri + repository-owned FFmpeg/FFprobe + deterministic trust-input overlay | Windows/macOS unsigned preview foundation, lifecycle/provenance, media custody, native verifier, and trust-input custody complete through #172/#180 | real update/model trust inputs, signing/notarization, native activation, final release evidence; Linux public package blocked by #135 |
+| Packaging | managed frozen runtime + Tauri + repository-owned FFmpeg/FFprobe + deterministic trust-input overlay | Windows/macOS unsigned preview foundation, lifecycle/provenance, media custody, native verifier, and trust-input custody complete through #172/#180 | real update/model trust inputs, platform trust qualification, native activation, final release evidence; Linux public package blocked by #135 |
 | Backup/restore | authority boundaries known | not implemented | **post-MVP** portability/data-safety feature |
 | Representative hardware | platform CI + policy contracts | partial | real devices; #114 owns current task-transport evidence |
 
@@ -117,7 +117,7 @@ Merged PR #144 completed the application-side trust mechanics:
 
 PR #170 then completed the native verifier plumbing with exact-pinned `ed25519-dalek` 3.0.0, strict verification, a fixed bounded native verification protocol, and packaged-only verifier activation. PR #172 added deterministic public trust-input custody and package overlay/verification, and PR #180 added public-key catalog construction plus the external ceremony runbook. None of those changes put a private signing key in the repository or substitute synthetic material for the real #177 ceremony.
 
-A staged update is deliberately **not** called installed. Native activation plus OS package signing/notarization remains a later packaging boundary.
+A staged update is deliberately **not** called installed. Native activation plus OS package platform trust qualification remains a later packaging boundary.
 
 ## 3. Pre-packaging release readiness complete (#145)
 
@@ -168,7 +168,7 @@ PR #170/#172/#180 subsequently completed native update verification, determinist
 
 The production-trust tranche is complete. #177 established the production release key/public catalog, #178 established the reviewed faster-whisper policy, PR #207 proved those inputs inside installed/mounted Windows/macOS candidates, and PR #209 qualified the externally produced production signature through the packaged verifier and trusted staging path.
 
-The active release tranche is now #173 OS signing/notarization.
+The active release tranche is now #173 Windows signing plus macOS open-source trust qualification.
 
 This tranche must not invent a private signing key, guess model hashes, or promote whichever development model cache happens to exist. The generator measures bytes; human review confers policy trust.
 
@@ -176,7 +176,7 @@ PR #183 and the speaker-count desktop polish do not change this release sequence
 
 After #168 is complete, the remaining release gates are explicitly ordered:
 
-1. #173 Windows code signing and macOS Developer ID signing/notarization of the production-shaped package bytes;
+1. #173 Windows code signing and macOS Developer ID platform trust qualification of the production-shaped package bytes;
 2. #174 platform-safe native update activation that executes only an already trusted, OS-signed candidate;
 3. #114 representative package/device qualification, including CPU-only/accelerator/Apple/Windows task transport and offline/repair/update behavior; and
 4. #175 final production release checksums/provenance/SBOM/signature publication bound to the same qualified bytes.
