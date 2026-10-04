@@ -225,6 +225,7 @@ def verify_production_model_policy() -> dict[str, object]:
         "legacy_migration": legacy_evidence,
     }
 
+
 def main() -> int:
     print(json.dumps(verify_production_model_policy(), indent=2, sort_keys=True))
     return 0
