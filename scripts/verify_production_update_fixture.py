@@ -58,9 +58,13 @@ class _FixtureTransport:
         if content is None:
             raise UpdateChannelError("qualification artifact URL was not recognized")
         if len(content) != expected_size:
-            raise UpdateChannelError("qualification artifact size did not match metadata")
+            raise UpdateChannelError(
+                "qualification artifact size did not match metadata"
+            )
         if hashlib.sha256(content).hexdigest() != expected_sha256:
-            raise UpdateChannelError("qualification artifact hash did not match metadata")
+            raise UpdateChannelError(
+                "qualification artifact hash did not match metadata"
+            )
         destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         destination.write_bytes(content)
 
@@ -71,7 +75,9 @@ def _load_fixture(
     payload = (fixture_dir / "payload.json").read_bytes()
     signature = (fixture_dir / "signature.bin").read_bytes()
     if len(signature) != 64:
-        raise RuntimeError("production qualification signature must be exactly 64 bytes")
+        raise RuntimeError(
+            "production qualification signature must be exactly 64 bytes"
+        )
     if hashlib.sha256(payload).hexdigest() != _EXPECTED_PAYLOAD_SHA256:
         raise RuntimeError("production qualification payload identity changed")
 
@@ -153,7 +159,9 @@ def _require_update_service_behavior(
     selected = parsed.artifact_for(platform_id)
     transport = _FixtureTransport(envelope, artifacts)
 
-    with tempfile.TemporaryDirectory(prefix="scholion-update-qualification-") as temporary:
+    with tempfile.TemporaryDirectory(
+        prefix="scholion-update-qualification-"
+    ) as temporary:
         root = Path(temporary).resolve()
         store = LocalFileManager()
         service = UpdateChannelService(
