@@ -51,7 +51,7 @@ See **[Production trust inputs](production-trust-inputs.md)** and **[Release-key
 
 The user-facing copy states the network truth plainly: GitHub/CDN still sees ordinary connection metadata such as IP address and request time. A failed/offline update check never blocks the local evidence workspace.
 
-**Production gate still required:** #173 OS signing/notarization and #174 native package activation. A staged hash-matching package is not called installed or executable merely because Scholion downloaded it successfully.
+**Production gate still required:** #173 Windows signing and macOS open-source trust qualification and #174 native package activation. A staged hash-matching package is not called installed or executable merely because Scholion downloaded it successfully.
 
 ### Curated model trust root
 
@@ -87,7 +87,7 @@ For a production candidate:
 4. send the exact generated payload bytes to the external Ed25519 signing process;
 5. run `scripts/build_release_metadata.py envelope` with the exact payload, public signature bytes, and approved key ID;
 6. verify the resulting envelope with the same production public-key verifier used by the desktop client before publication; and
-7. publish only after OS code signing/notarization and native qualification also pass.
+7. publish only after applicable platform trust qualification and native qualification also pass.
 
 The metadata builder refuses a non-stable first-release channel, invalid SemVer text, and non-UTC signing timestamps before the external signer sees payload bytes.
 
@@ -177,8 +177,8 @@ PR #170 completed strict native Ed25519 verification plumbing. PR #172 completed
 
 The remaining **MVP release gates** are narrow and concrete:
 
-1. complete #173 Windows signing and macOS Developer ID signing/notarization;
-2. complete #174 native update activation so only an already trusted, OS-signed candidate can be executed;
+1. complete #173 Windows signing and macOS non-notarized open-source trust qualification/disclosure;
+2. complete #174 native update activation so only an already project-verified candidate can be executed under the applicable platform policy;
 3. complete #114 representative packaged-device/offline/repair/update qualification; and
 4. complete #175 by publishing the MVP with final checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same release candidate.
 
