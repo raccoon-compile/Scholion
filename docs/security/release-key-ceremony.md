@@ -47,6 +47,16 @@ At minimum:
 - do not paste it into issues, PRs, logs, documentation, chat, or support channels; and
 - never publish private-key bytes, seed material, recovery material, or an export containing them.
 
+### Production custody record
+
+The first production release key is retained under maintainer-controlled encrypted custody outside Scholion's repository, application resources, CI environment, build artifacts, and ordinary development files.
+
+The recovery design maintains more than one encrypted copy under separate storage controls so loss of the primary workstation does not imply loss of the signing key. The decryption secret is retained separately from the encrypted private-key material.
+
+Exact storage providers, device names, filesystem paths, filenames, vault entries, recovery-media locations, and other coordinates that would materially assist key discovery are intentionally not recorded in the public repository. Those details remain private release-operations information.
+
+An additional offline encrypted recovery copy may be maintained as defense in depth, but it does not change the public custody contract: private signing material remains external, encrypted, separately recoverable, and unavailable to GitHub Actions or the installed application.
+
 ## Public-key handoff
 
 Only the public key crosses into Scholion's release-review workflow.
