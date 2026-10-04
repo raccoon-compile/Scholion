@@ -130,7 +130,9 @@ def _validate_policy_receipt(
         or policy.get("verified_files") != len(files)
         or policy.get("total_bytes") != expected_total
     ):
-        raise RuntimeError("packaged model policy receipt does not match reviewed policy")
+        raise RuntimeError(
+            "packaged model policy receipt does not match reviewed policy"
+        )
     return manifest_path, document
 
 
