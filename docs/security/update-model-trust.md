@@ -46,7 +46,7 @@ A distribution service such as Hugging Face transports bytes. It does not decide
 
 Application composition loads packaged `model-trust.json`. If the build contains a valid catalog, policy enforcement is automatically enabled. If no catalog is bundled, current source/development builds remain on the provider/local-revalidation path. There is no runtime policy fetch and no remotely mutable model-policy service.
 
-The repository deliberately still contains **no production faster-whisper trust entries**. `scripts/generate_model_trust_entry.py` can deterministically measure a deliberately selected immutable snapshot, including safe Hugging Face-style in-cache symlinks, but generated JSON becomes policy only after human review and inclusion in a signed Scholion release.
+The reviewed first-release faster-whisper policy is committed at `packaging/release-trust/model-trust.json`. It pins `tiny`, `small`, and `medium` to deliberately reviewed immutable Systran revisions and complete logical file-set/size/SHA-256 evidence. `scripts/generate_model_trust_entry.py` remains measurement tooling only; human review and the committed production policy confer trust. `scripts/verify_model_policy_qualification.py` exercises the real managed policy path against that catalog, including exact install/revalidation, offline inference, and legacy installed-but-untrusted fail-closed behavior.
 
 ## Update manifest v1
 
