@@ -126,15 +126,14 @@ The architecture/redundancy audit remains closed after a post-#144 re-audit. The
 
 ## What comes next
 
-The Scholion identity migration, application-side update/model-trust mechanics, pre-packaging milestone #145, Windows/macOS package foundation, deterministic package lifecycle/provenance, managed packaged FFmpeg/FFprobe custody, strict native Ed25519 verification, deterministic public trust-input custody, and public-key ceremony support are complete.
+The Scholion identity migration, application-side update/model-trust mechanics, pre-packaging milestone #145, Windows/macOS package foundation, deterministic package lifecycle/provenance, managed packaged FFmpeg/FFprobe custody, strict native Ed25519 verification, deterministic public trust-input custody, public-key ceremony support, and production-shaped real-trust qualification are complete.
 
 The remaining first-release sequence is intentionally narrow:
 
-1. **Real production trust inputs and qualification (#177, #178, #168):** perform the external production release-key ceremony, review the real faster-whisper `tiny`, `small`, and `medium` immutable snapshots, bundle those approved public inputs through the existing custody path, and qualify the production-shaped candidate end to end;
-2. **OS signing/notarization (#173):** sign Windows package bytes and sign/notarize macOS package bytes once the production trust inputs are stable;
-3. **Native update activation (#174):** execute only an already trusted, OS-signed staged candidate and keep staging distinct from installation until that proof exists;
-4. **Representative release qualification (#114):** exercise real packaged CPU-only/accelerator/Apple/Windows behavior, offline/update/repair/lifecycle cases, accessibility/device behavior, and the remaining native task-transport evidence; and
-5. **MVP release (#175):** publish the final candidate with checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same bytes.
+1. **OS signing/notarization (#173):** sign Windows package bytes and sign/notarize macOS package bytes now that #168 has qualified the real production trust inputs and production-key update signature;
+2. **Native update activation (#174):** execute only an already trusted, OS-signed staged candidate and keep staging distinct from installation until that proof exists;
+3. **Representative release qualification (#114):** exercise real packaged CPU-only/accelerator/Apple/Windows behavior, offline/update/repair/lifecycle cases, accessibility/device behavior, and the remaining native task-transport evidence; and
+4. **MVP release (#175):** publish the final candidate with checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same bytes.
 
 Official Linux binary packaging remains blocked by #135. Backup/restore + selected research portability, packaged semantic custody, and broader research-native features remain useful **post-MVP** work rather than reasons to hold the first Windows/macOS release hostage.
 
