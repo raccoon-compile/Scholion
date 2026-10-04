@@ -55,7 +55,7 @@ See **[Signed update and model trust channel](security/update-model-trust.md)** 
 
 Scholion's update UI is manual. It distinguishes Off, Never checked, Checking, Up to date, Trusted update available, Staging/Staged, and bounded failure. Signed metadata must pass key/signature, publication/expiry, stable-channel, platform, anti-rollback, and equivocation checks before it can authorize an artifact. A downloaded artifact must then match the signed byte count and SHA-256 exactly.
 
-A staged package is **not installed**. Strict native Ed25519 verification, deterministic public trust-input custody, and repository-side public-key catalog/ceremony support are implemented. The real production release key/public catalog, real reviewed model catalog, production-shaped qualification, Windows/macOS signing/notarization, and native activation remain separate release gates.
+A staged package is **not installed**. Strict native Ed25519 verification, deterministic public trust-input custody, the real production public-key catalog, the reviewed model catalog, and production-shaped signed-fixture qualification are complete. Windows/macOS OS signing/notarization and native activation remain separate release gates.
 
 An update check is network activity, but it is not behavioral telemetry. GitHub/CDN can observe ordinary connection metadata such as IP address and request time. Scholion does not send an installation ID, corpus/research content, hardware/model inventory, or product-behavior data.
 

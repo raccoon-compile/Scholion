@@ -71,7 +71,7 @@ The user-facing copy states the network truth plainly: GitHub/CDN still sees ord
 
 The generator measures bytes. It does not decide that a model is trustworthy.
 
-**Production model review completed under #178:** the first-release faster-whisper `tiny`, `small`, and `medium` revisions, licenses, complete file sets, hashes, engine compatibility, managed install/revalidation, offline inference, and legacy-untrusted admission behavior are qualified against the reviewed catalog. #168 must still bind and qualify those exact public inputs in the production-shaped Windows/macOS package. Development cache contents, guessed hashes, `main`, and `HEAD` remain unacceptable trust inputs.
+**Production model review completed under #178 and package-qualified under #168:** the first-release faster-whisper `tiny`, `small`, and `medium` revisions, licenses, complete file sets, hashes, engine compatibility, managed install/revalidation, offline inference, legacy-untrusted admission behavior, and production-shaped Windows/macOS package enforcement are qualified against the reviewed catalog. Development cache contents, guessed hashes, `main`, and `HEAD` remain unacceptable trust inputs.
 
 The exact review sequence is frozen in **[Production trust inputs](production-trust-inputs.md)** so the release process does not invent model policy ad hoc.
 
@@ -153,8 +153,7 @@ Backup/restore and research portability are now explicitly post-MVP product work
 
 Browser Playwright intentionally swaps in mock clients and is not native evidence. Public release qualification still needs:
 
-- production-shaped valid/invalid update verification with the real #177 public catalog and external signature;
-- model install/revalidation/offline transcription with the actual #178 reviewed catalog;
+- OS signature/notarization verification on the exact Windows/macOS distributed artifacts under #173;
 - real React → Tauri → Rust → Python update/Processing calls;
 - bounded behavior when child processes fail/hang;
 - no evidence/request parameters in routine native diagnostics;

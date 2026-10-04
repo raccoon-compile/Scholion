@@ -166,11 +166,9 @@ PR #170/#172/#180 subsequently completed native update verification, determinist
 
 ## 5. Real production trust inputs and production-shaped qualification ← current milestone
 
-The current tranche is deliberately narrower than “finish packaging.” The verifier and custody machinery are already merged. What remains is to:
+The production-trust tranche is complete. #177 established the production release key/public catalog, #178 established the reviewed faster-whisper policy, PR #207 proved those inputs inside installed/mounted Windows/macOS candidates, and PR #209 qualified the externally produced production signature through the packaged verifier and trusted staging path.
 
-- keep the completed #177 production release-key ceremony and #178 reviewed faster-whisper policy as fixed release inputs;
-- keep those approved public inputs flowing through the deterministic #172 custody path; and
-- finish #168 by qualifying the production-shaped package end to end with the actual public catalog/model policy, including valid/invalid signature behavior, model admission/revalidation, offline behavior, and exact package/provenance identity.
+The active release tranche is now #173 OS signing/notarization.
 
 This tranche must not invent a private signing key, guess model hashes, or promote whichever development model cache happens to exist. The generator measures bytes; human review confers policy trust.
 
@@ -189,7 +187,7 @@ Public **Linux** binary packaging remains blocked by issue #135 while the suppor
 
 ## 6. Representative release qualification
 
-Hosted Release Qualification now proves the frozen runtime and exact unsigned Windows/macOS preview package can process pinned real JFK media. PR #164 established that artifact boundary, PR #166 added stronger Windows lifecycle/evidence custody and deterministic provenance, and PR #167 removed ambient packaged FFmpeg/FFprobe dependency by proving the bundled reviewed media-tool bytes. PR #170/#172 add native verification/custody mechanics, but real trust material and OS signatures still remain later gates. This remains artifact-level CI evidence, not representative-device evidence. Continue by qualifying what users will actually run:
+Hosted Release Qualification now proves the frozen runtime and exact unsigned Windows/macOS preview package can process pinned real JFK media. PR #164 established that artifact boundary, PR #166 added stronger Windows lifecycle/evidence custody and deterministic provenance, and PR #167 removed ambient packaged FFmpeg/FFprobe dependency by proving the bundled reviewed media-tool bytes. PR #170/#172 established native verification/custody mechanics, and PRs #207/#209 completed real production trust qualification. OS signatures/notarization remain the active release gate. This remains artifact-level CI evidence, not representative-device evidence. Continue by qualifying what users will actually run:
 
 - Windows 8 GB CPU-only;
 - ordinary 16 GB systems;
