@@ -127,8 +127,8 @@ def _qualify_trusted_install(
         model_revision=trusted_spec.revision,
     )
     with _offline_hub_environment():
-        transcript = FasterWhisperTranscriber().open_session(configuration).transcribe(
-            fixture
+        transcript = (
+            FasterWhisperTranscriber().open_session(configuration).transcribe(fixture)
         )
     recognized = _words(" ".join(segment.text for segment in transcript.segments))
     matches = recognized & _EXPECTED_WORDS
