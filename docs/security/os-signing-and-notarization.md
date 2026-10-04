@@ -1,83 +1,91 @@
-# OS signing and notarization
+# OS distribution trust
 
-This document explains the platform-trust boundary that follows Scholion's production trust-input work.
+Scholion has two separate distribution-trust layers. They must not be collapsed into one another.
 
-Scholion has two different kinds of release trust, and they solve different problems:
+1. **Scholion project trust** verifies Scholion's signed update metadata and exact staged artifact bytes using the project's Ed25519 release key.
+2. **Operating-system distribution trust** is platform-specific. Windows can authenticate the publisher through code signing. macOS can provide Apple Developer ID identity and notarization when the project participates in Apple's paid developer program.
 
-1. **Scholion project trust** verifies Scholion's own signed update metadata and exact staged artifact bytes using the project's Ed25519 release key.
-2. **Operating-system distribution trust** lets Windows and macOS verify that the application package was signed by the expected registered publisher/developer and, on macOS, that the submitted build passed Apple's notarization service.
+The first-release policy intentionally treats those platform paths differently.
 
-Neither mechanism replaces the other.
+## First-release policy
 
-## macOS: direct distribution, not the Mac App Store
+### Windows
 
-Scholion's planned macOS release is a directly distributed application, for example a versioned DMG published through GitHub Releases. That does **not** require publishing Scholion in the Mac App Store.
+The Windows production release remains required to use an appropriate production code-signing credential/certificate path. The final application/installer bytes must be signed, the signature must be verified on the exact bytes users receive, and the post-signing SHA-256 identity must be bound into release evidence.
 
-For normal direct distribution on modern macOS, the release path should use Apple's **Developer ID** signing identity and Apple's **notarization** service.
+Private Windows signing material must stay outside Git, application resources, ordinary CI logs, and published artifacts.
 
-Conceptually:
+### macOS
 
-1. the release owner participates in Apple's developer program/account system and obtains the appropriate Developer ID signing identity;
-2. the final Scholion application bundle and relevant nested native code are signed with that identity;
-3. the signed build is submitted to Apple's notarization service;
-4. after Apple reports successful notarization, the notarization result is associated with the distributed artifact and stapled where appropriate; and
-5. representative macOS qualification verifies that Gatekeeper accepts the exact artifact users will receive.
+Scholion is free and open-source software. The project does **not** currently budget for the recurring Apple Developer Program membership required for Developer ID signing/notarization. Apple Developer ID notarization is therefore **not a first-release blocker**.
 
-This is Apple's direct-download trust path. It is separate from App Store submission, App Store review, App Store commerce, sandboxing requirements specific to App Store distribution, and App Store publication.
+The macOS production artifact must instead satisfy all of the following:
 
-The exact current Apple enrollment terms, certificate workflow, command-line tooling, notarization requirements, and account rules are external platform policy and must be reverified against Apple's current documentation when #173 is executed. Scholion documentation should not hard-code a fee or credential procedure that can change independently of this repository.
+1. the exact artifact is built from the approved release commit and reviewed production trust inputs;
+2. Scholion's signed Ed25519 release metadata binds that exact artifact by platform, size, and SHA-256;
+3. release publication includes human-auditable SHA-256 checksums, deterministic provenance, SBOM material, and qualification evidence for those same bytes;
+4. the download/release surface explicitly states that the macOS build is **not Apple Developer ID signed/notarized** and may require explicit per-app approval by macOS;
+5. representative macOS qualification exercises the exact distributed artifact and records the actual Gatekeeper/first-launch behavior observed on the tested system; and
+6. Scholion never strips quarantine metadata, disables Gatekeeper, or silently bypasses macOS security policy on the user's behalf.
 
-## What notarization means
+This is **Scholion project verification**, not Apple certification. The project should not describe the macOS package as Apple-trusted, Apple-notarized, or Apple-certified.
 
-Notarization is not a source-code review and is not an endorsement of Scholion's product claims. It is an Apple-operated automated security/distribution check over a signed submission.
+If funding later becomes available, Developer ID signing/notarization may be added as an additional platform trust layer. It must not replace Scholion's own release-signature, checksum, provenance, or SBOM evidence.
 
-For Scholion, the important release invariant is narrower:
+## Why the distinction matters
 
-> the exact macOS artifact published to users must be the same signed/notarized candidate that passed release qualification and whose public identity is recorded in release evidence.
+Scholion's Ed25519 release key answers a project-level question:
 
-Notarization therefore belongs after the production payload is finalized and before the release is represented as production-ready.
+> Did the Scholion project authorize metadata that binds this exact platform artifact?
 
-## Windows: code signing
+Windows code signing answers a platform publisher question:
 
-Windows has an analogous publisher-trust problem, although the platform mechanics differ.
+> Does Windows recognize the publisher credential that signed these exact application/installer bytes?
 
-The Windows production release should use an appropriate production code-signing credential/certificate custody path, sign the final application/installer artifacts required by the distribution flow, verify those signatures on the exact bytes users will receive, and bind the signed artifact identity into Scholion's release evidence.
+Apple Developer ID/notarization would answer a separate Apple-platform question:
 
-As with the macOS path, private signing credentials must not be committed to Git, embedded in the application, copied into ordinary CI logs/artifacts, or confused with Scholion's public Ed25519 update-verification key.
+> Did an Apple-issued Developer ID sign this submission, and did Apple's notarization service accept it?
+
+These are complementary claims. None of them should be represented as stronger than it is.
+
+## macOS user disclosure
+
+The release notes and repository download guidance must say, in substance:
+
+> Scholion's macOS build is not Apple Developer ID signed or notarized. Scholion is free/open-source software and the project does not currently participate in Apple's paid Developer ID/notarization program. macOS may warn that it cannot verify the developer or require explicit per-app approval before first launch. Scholion publishes signed release metadata, SHA-256 checksums, deterministic provenance, SBOM material, and qualification evidence for the exact distributed artifact. Do not disable Gatekeeper globally.
+
+Do not hard-code a regional Apple membership price into durable security documentation. Fees and platform rules can change independently of this repository.
 
 ## Relationship to Scholion's Ed25519 update key
 
-The three relevant trust objects are intentionally separate:
-
-| Object | Purpose | Private material location |
+| Object | Purpose | First-release status |
 |---|---|---|
-| Scholion Ed25519 release key | signs Scholion update metadata | external controlled custody; never in the shipped app |
-| Windows signing credential | lets Windows identify/trust the publisher of the distributed Windows artifact | external platform-signing custody |
-| Apple Developer ID signing identity | lets macOS identify the developer of a directly distributed app; prerequisite for notarization | Apple/platform-signing custody |
+| Scholion Ed25519 release key | signs Scholion update metadata and authorizes exact artifact identity | required |
+| Windows signing credential | lets Windows identify/trust the publisher of the Windows application/installer | required |
+| Apple Developer ID identity/notarization | lets macOS evaluate an Apple-identified/notarized direct-download app | optional/deferred until funded |
 
-The installed Scholion application contains only the public verification material it needs. It never needs the private Ed25519 release key, Windows private signing credential, or Apple private signing identity.
+The installed application contains only public verification material it needs. Private project/platform signing material never belongs in the shipped app.
 
 ## Release sequence
 
-The Windows/macOS release path is now tracked explicitly:
-
-1. **#177** create and safeguard the real Scholion Ed25519 release key and produce the reviewed public verification catalog;
-2. **#178** review and pin the first-release `tiny`, `small`, and `medium` faster-whisper snapshots;
+1. **#177** create and safeguard the real Scholion Ed25519 release key and reviewed public verification catalog;
+2. **#178** review and pin the first-release faster-whisper snapshots;
 3. **#168** bind those exact public trust inputs into a production-shaped candidate and qualify them end to end;
-4. **#173** sign the Windows candidate and sign/notarize the macOS candidate;
-5. **#174** activate only already-trusted staged updates through the narrow native host;
-6. **#114** record representative native device qualification; and
-7. **#175** publish the final checksums, provenance, SBOM, signatures, signed update metadata, and supported Windows/macOS MVP artifacts.
+4. **#173** complete Windows code signing and qualify the macOS open-source distribution trust/disclosure path;
+5. **#174** activate only already-project-verified staged updates through the narrow native host while preserving each platform's applicable security policy;
+6. **#114** record representative native device qualification, including actual macOS first-launch behavior; and
+7. **#175** publish final checksums, provenance, SBOM, signatures, signed update metadata, disclosure, and supported release artifacts.
 
 `release_ready` remains false until the applicable release gates are complete.
 
 ## Boundaries
 
-- no Mac App Store distribution is required by this plan;
-- no Apple or Windows platform signing credential belongs in repository fixtures or source control;
-- platform signing does not replace Scholion's Ed25519 update-manifest verification;
-- Scholion's Ed25519 signature does not replace platform signing/notarization;
-- hosted CI preview packages are not production releases merely because they build and run;
-- official Linux binary distribution remains separately blocked by #135.
+- no Mac App Store distribution is required;
+- no platform signing credential belongs in source control, fixtures, logs, or ordinary artifacts;
+- Windows signing does not replace Scholion's Ed25519 release verification;
+- Scholion's Ed25519 verification does not claim Apple notarization;
+- Scholion must not automate Gatekeeper bypass or global security weakening;
+- hosted CI package success does not substitute for representative-device evidence;
+- official Linux binary distribution remains separately governed by #135.
 
 Related: #168, #173, #174, #175, #177, #178, #114, #135, `production-trust-inputs.md`, `update-model-trust.md`.

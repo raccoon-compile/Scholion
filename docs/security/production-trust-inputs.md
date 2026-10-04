@@ -23,7 +23,7 @@ The completed trust chain and remaining release gates are explicit:
 - **#177** completed creation/custody of the real Scholion Ed25519 release-signing key and reviewed public `update-keys.json` catalog.
 - **#178** completed live review of the first-release faster-whisper `tiny`, `small`, and `medium` snapshots, including immutable revisions, licenses/model cards, complete file sets, sizes, hashes, and engine compatibility.
 - **#168** is complete: PR #207 bound those exact public inputs into installed/mounted Windows/macOS candidates and provenance; PR #209 qualifies the externally produced `release-2026-a` signature through the packaged native verifier, mutation/unknown-key rejection, update authorization, and exact staging.
-- **#173** is the next gate for Windows code signing and macOS Developer ID signing/notarization.
+- **#173** is the next gate for Windows code signing and macOS open-source distribution trust/disclosure qualification; Apple Developer ID notarization is deferred rather than release-blocking.
 - **#174** follows platform signing for explicit user-authorized native activation of a trusted staged update.
 - **#114** remains representative real-device qualification.
 - **#175** owns final production release publication, including checksums, provenance, SBOM, signatures, signed update metadata, and GitHub Release artifacts.
@@ -199,7 +199,7 @@ Scholion's Ed25519 release signature and OS platform signing solve different pro
 
 - Scholion's Ed25519 signature proves that release metadata and staged artifact identity were authorized by the Scholion project.
 - Windows code signing lets Windows identify/trust the publisher of the distributed Windows artifact.
-- macOS Developer ID signing and notarization let Gatekeeper evaluate a directly distributed macOS build.
+- macOS Developer ID signing/notarization would add Apple's publisher/notarization trust layer, but Scholion's first release instead relies on project-signed exact-byte metadata plus explicit non-notarized disclosure and representative-device qualification.
 
 The planned macOS path does **not** require Mac App Store publication. See `os-signing-and-notarization.md` and #173.
 

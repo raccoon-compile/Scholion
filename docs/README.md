@@ -55,7 +55,7 @@ See **[Signed update and model trust channel](security/update-model-trust.md)** 
 
 Scholion's update UI is manual. It distinguishes Off, Never checked, Checking, Up to date, Trusted update available, Staging/Staged, and bounded failure. Signed metadata must pass key/signature, publication/expiry, stable-channel, platform, anti-rollback, and equivocation checks before it can authorize an artifact. A downloaded artifact must then match the signed byte count and SHA-256 exactly.
 
-A staged package is **not installed**. Strict native Ed25519 verification, deterministic public trust-input custody, the real production public-key catalog, the reviewed model catalog, and production-shaped signed-fixture qualification are complete. Windows/macOS OS signing/notarization and native activation remain separate release gates.
+A staged package is **not installed**. Strict native Ed25519 verification, deterministic public trust-input custody, the real production public-key catalog, the reviewed model catalog, and production-shaped signed-fixture qualification are complete. Windows code signing, macOS open-source trust disclosure/qualification, and native activation remain separate release gates.
 
 An update check is network activity, but it is not behavioral telemetry. GitHub/CDN can observe ordinary connection metadata such as IP address and request time. Scholion does not send an installation ID, corpus/research content, hardware/model inventory, or product-behavior data.
 
@@ -77,7 +77,7 @@ An update check is network activity, but it is not behavioral telemetry. GitHub/
 - **[Semantic search, without the mystery box](semantic-search.md)** for local semantic/hybrid retrieval.
 - **[Signed update and model trust channel](security/update-model-trust.md)** for implemented supply-chain mechanics and privacy boundaries.
 - **[Production trust inputs](security/production-trust-inputs.md)** for the implemented native verifier/custody contract plus the remaining real key/model provisioning and qualification sequence.
-- **[OS signing and notarization](security/os-signing-and-notarization.md)** for the separate platform trust layer and direct-distribution model.
+- **[OS distribution trust](security/os-signing-and-notarization.md)** for Windows publisher signing and the documented non-notarized macOS release path.
 - **[Release-key ceremony](security/release-key-ceremony.md)** for the external private-key custody boundary and public catalog workflow.
 - **[Pre-release security hardening](security/release-hardening.md)** for what still qualifies as a release gate versus post-MVP hardening.
 - **[Desktop themes and accessibility](development/desktop-accessibility.md)** for the eight-skin semantic token system and contrast qualification.

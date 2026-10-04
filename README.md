@@ -16,6 +16,14 @@ A *scholion* is an explanatory, critical, or interpretive note attached to a tex
 
 Start with **[docs/README.md](docs/README.md)** for human-facing documentation or **[Getting started](docs/getting-started.md)** for the shortest clone-to-transcript path. The desktop also keeps contextual help available inside the app so ordinary use does not depend on having repository docs open.
 
+## macOS distribution notice
+
+Scholion is free and open-source software. The project does **not** currently participate in Apple's paid Developer ID/notarization program, so the planned macOS release will not carry Apple Developer ID notarization. macOS may therefore warn that it cannot verify the developer or require explicit per-app approval before first launch. Exact wording and approval flow can vary by macOS version.
+
+That platform warning is not the project's trust boundary. Scholion release metadata is signed with the project's Ed25519 release key and binds the exact platform artifact by size and SHA-256. Releases also publish checksums, deterministic provenance, SBOM material, and qualification evidence for the exact distributed bytes. This is **Scholion project verification**, not Apple certification.
+
+Do not disable Gatekeeper globally to run Scholion. If macOS blocks first launch, use the operating system's explicit per-app approval flow only after confirming that the downloaded artifact matches Scholion's published release evidence. If the project later has funding for Apple Developer Program membership, Developer ID signing/notarization can be added as an additional platform trust layer without replacing Scholion's own release verification.
+
 ## What can it do right now?
 
 Scholion is pre-production, but the backend and desktop cover a coherent path from importing a recording through local processing, evidence search, durable research, transcript/speaker management, verified local playback, custody-aware storage management, and explicit privacy-preserving update checks.
@@ -216,8 +224,8 @@ Research/search, Processing, explicit embedded-track transcription, desktop comp
 
 The remaining first-release sequence is intentionally narrow:
 
-1. **OS signing/notarization (#173):** sign Windows package bytes and sign/notarize macOS package bytes now that the production trust inputs and production-key update signature have been qualified end to end;
-2. **Native update activation (#174):** execute only an already trusted, OS-signed staged candidate while keeping staging distinct from installation until this boundary is qualified;
+1. **Platform distribution trust (#173):** sign and verify the Windows package, and qualify/document the macOS open-source distribution path with project-signed exact-byte evidence and an explicit non-notarized disclosure;
+2. **Native update activation (#174):** execute only an already project-verified staged candidate while enforcing the applicable platform trust policy and keeping staging distinct from installation until this boundary is qualified;
 3. **Representative release qualification (#114):** prove real packaged CPU-only/accelerator/Apple/Windows behavior, offline/update/repair/lifecycle cases, accessibility/device behavior, and the remaining native task-transport evidence; and
 4. **MVP release (#175):** publish the final candidate with checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same bytes.
 
