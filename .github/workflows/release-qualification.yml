@@ -238,10 +238,13 @@ jobs:
           uv run --no-sync python scripts/verify_packaged_release_trust_inputs.py \
             --runtime "$runtime" \
             --prepared-dir build/release-trust-inputs
-          mapfile -t native_hosts < <(find "$mount_point/Scholion.app/Contents/MacOS" -maxdepth 1 -type f -perm -111 -print)
-          test "${#native_hosts[@]}" -eq 1
+          native_host_dir="$mount_point/Scholion.app/Contents/MacOS"
+          native_host_count="$(find "$native_host_dir" -maxdepth 1 -type f -print | wc -l | tr -d ' ')"
+          test "$native_host_count" -eq 1
+          native_host="$(find "$native_host_dir" -maxdepth 1 -type f -print | head -n 1)"
+          test -x "$native_host"
           uv run --no-sync python scripts/verify_production_update_fixture.py \
-            --native-verifier "${native_hosts[0]}" \
+            --native-verifier "$native_host" \
             --fixture-dir packaging/release-trust/update-qualification
           uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py "$runtime" \
             --model-trust-catalog packaging/release-trust/model-trust.json
