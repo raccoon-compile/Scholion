@@ -126,7 +126,7 @@ This protects against network/hosting rollback. It is not a defense against a sa
 - fsync before activation into staged custody; and
 - atomic local replacement of the staged file.
 
-A staged package is **not installed**. Native platform activation remains a separate trust boundary because Windows/macOS/Linux packaging, application signatures/notarization, rollback behavior, and process replacement are platform responsibilities. The UI says this explicitly instead of presenting staging as installation.
+A staged package is **not installed**. Native platform activation remains a separate trust boundary because Windows/macOS/Linux packaging, applicable platform trust policy, rollback behavior, and process replacement are platform responsibilities. The UI says this explicitly instead of presenting staging as installation.
 
 ## Release metadata generation
 
@@ -246,7 +246,7 @@ Issue #145 completed the **pre-packaging** decisions/cleanup. Once that mileston
 - the exact-pinned reviewed Rust verifier dependency and generated/audited lockfile;
 - the approved production public-key/key-rotation resource, never the private signer;
 - deliberately reviewed real faster-whisper revisions and generated catalog entries;
-- platform package signing/notarization and native installation/activation;
+- Windows package signing, macOS non-notarized trust disclosure/qualification, and native installation/activation;
 - representative native/offline qualification with the actual production key/catalog; and
 - resolution of the separate upstream Linux dependency gate before calling Linux packaging production-ready.
 
