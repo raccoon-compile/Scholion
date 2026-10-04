@@ -17,6 +17,7 @@ on:
       - "scripts/scholion_runtime_entry.py"
       - "scripts/verify_packaged_media_tools.py"
       - "scripts/verify_packaged_release_trust_inputs.py"
+      - "scripts/verify_production_update_fixture.py"
       - "scripts/verify_packaged_runtime_acceptance.py"
       - "scripts/verify_cross_platform_media_acceptance.py"
       - "src/scholion/**"
@@ -38,6 +39,7 @@ on:
       - "scripts/scholion_runtime_entry.py"
       - "scripts/verify_packaged_media_tools.py"
       - "scripts/verify_packaged_release_trust_inputs.py"
+      - "scripts/verify_production_update_fixture.py"
       - "scripts/verify_packaged_runtime_acceptance.py"
       - "scripts/verify_cross_platform_media_acceptance.py"
       - "src/scholion/**"
@@ -236,6 +238,11 @@ jobs:
           uv run --no-sync python scripts/verify_packaged_release_trust_inputs.py \
             --runtime "$runtime" \
             --prepared-dir build/release-trust-inputs
+          mapfile -t native_hosts < <(find "$mount_point/Scholion.app/Contents/MacOS" -maxdepth 1 -type f -perm -111 -print)
+          test "${#native_hosts[@]}" -eq 1
+          uv run --no-sync python scripts/verify_production_update_fixture.py \
+            --native-verifier "${native_hosts[0]}" \
+            --fixture-dir packaging/release-trust/update-qualification
           uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py "$runtime" \
             --model-trust-catalog packaging/release-trust/model-trust.json
           hdiutil detach "$mount_point"
@@ -316,6 +323,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "Installed Scholion production trust-input qualification failed"
           }
+          $nativeHosts = @(Get-ChildItem $installDir -File -Filter *.exe | Where-Object { $_.Name -ne "uninstall.exe" })
+          if ($nativeHosts.Count -ne 1) {
+            throw "Expected exactly one packaged native Scholion host"
+          }
+          uv run --no-sync python scripts/verify_production_update_fixture.py --native-verifier $nativeHosts[0].FullName --fixture-dir packaging/release-trust/update-qualification
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installed Scholion production update-signature qualification failed"
+          }
           uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py $runtime --workspace-root $retainedWorkspace --model-trust-catalog packaging/release-trust/model-trust.json
           if ($LASTEXITCODE -ne 0) {
             throw "Installed Scholion runtime acceptance failed"
@@ -342,6 +357,14 @@ jobs:
           uv run --no-sync python scripts/verify_packaged_release_trust_inputs.py --runtime $runtime --prepared-dir $trustEvidence
           if ($LASTEXITCODE -ne 0) {
             throw "Reinstalled Scholion production trust-input qualification failed"
+          }
+          $nativeHosts = @(Get-ChildItem $installDir -File -Filter *.exe | Where-Object { $_.Name -ne "uninstall.exe" })
+          if ($nativeHosts.Count -ne 1) {
+            throw "Expected exactly one packaged native Scholion host after reinstall"
+          }
+          uv run --no-sync python scripts/verify_production_update_fixture.py --native-verifier $nativeHosts[0].FullName --fixture-dir packaging/release-trust/update-qualification
+          if ($LASTEXITCODE -ne 0) {
+            throw "Reinstalled Scholion production update-signature qualification failed"
           }
           uv run --no-sync python scripts/verify_packaged_runtime_acceptance.py $runtime --workspace-root $reinstallWorkspace --model-trust-catalog packaging/release-trust/model-trust.json
           if ($LASTEXITCODE -ne 0) {
@@ -418,6 +441,7 @@ jobs:
                   "production_public_trust_inputs_bundled": True,
                   "packaged_model_policy_enforced": True,
                   "legacy_untrusted_model_fails_closed": True,
+                  "production_update_signature_qualified": True,
                   "real_jfk_transcription_through_frozen_runtime": True,
                   "offline_inference_after_model_install": True,
                   "canonical_evidence_and_exports": True,
@@ -430,7 +454,6 @@ jobs:
                   "artifact_sha256": True,
               },
               "remaining_release_gates": [
-                  "qualify the production-key signed update fixture",
                   "implement and qualify native update activation",
                   "apply and verify Windows code signing and macOS signing/notarization",
                   "complete representative-device qualification under issue #114",
@@ -456,6 +479,8 @@ jobs:
           --input packaging/release-trust/update-keys.json
           --input packaging/release-trust/model-trust.json
           --input build/release-trust-inputs/release-trust-inputs.json
+          --input packaging/release-trust/update-qualification/payload.json
+          --input packaging/release-trust/update-qualification/signature.bin
           --output release-preview/provenance.json
 
       - name: Upload exact preview package and qualification evidence
