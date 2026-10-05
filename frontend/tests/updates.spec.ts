@@ -29,7 +29,7 @@ test("manual update check explains privacy boundaries and stays accessible", asy
   expect(accessibility.violations).toEqual([]);
 });
 
-test("trusted update can be downloaded verified and staged without claiming installation", async ({
+test("trusted staged update can be reverified for native handoff without claiming installation", async ({
   page,
 }) => {
   await openUpdates(page, "&update-mode=available");
@@ -48,7 +48,17 @@ test("trusted update can be downloaded verified and staged without claiming inst
   await expect(page.getByRole("button", { name: "Verifying…" })).toBeDisabled();
   await expect(page.getByRole("heading", { name: "Trusted update staged" })).toBeVisible();
   await expect(page.getByText(/Installation is deliberately separate/)).toBeVisible();
-  await expect(page.getByRole("button", { name: /Install/ })).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Prepare for installation" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Re-verifying staged update" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Re-verifying…" })).toBeDisabled();
+  await expect(
+    page.getByRole("heading", { name: "Ready for installation handoff" }),
+  ).toBeVisible();
+  await expect(page.getByText(/Exact staged bytes re-verified/)).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Install/ })).toHaveCount(0);
 });
 
 test("source build without production update key remains offline and explicit", async ({ page }) => {
