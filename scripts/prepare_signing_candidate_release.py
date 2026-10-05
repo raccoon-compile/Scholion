@@ -122,7 +122,9 @@ def _stage_platform(
     expected_commit: str,
 ) -> None:
     artifact_root = artifact_root.resolve(strict=True)
-    bundle_root = artifact_root / "frontend" / "src-tauri" / "target" / "release" / "bundle"
+    bundle_root = (
+        artifact_root / "frontend" / "src-tauri" / "target" / "release" / "bundle"
+    )
     package_root = bundle_root / platform.package_subdir
     packages = sorted(package_root.glob(f"*{platform.package_suffix}"))
     _require(
@@ -141,7 +143,9 @@ def _stage_platform(
     provenance = _load_json(provenance_path, "provenance")
     checksums = _load_checksums(checksums_path)
 
-    _require(qualification.get("schema_version") == 1, "unsupported qualification schema")
+    _require(
+        qualification.get("schema_version") == 1, "unsupported qualification schema"
+    )
     _require(
         qualification.get("qualification") == "unsigned-preview",
         "signing candidate must originate from unsigned-preview qualification",
@@ -273,8 +277,7 @@ def main() -> int:
     _require(
         len(arguments.expected_commit) == 40
         and all(
-            character in "0123456789abcdef"
-            for character in arguments.expected_commit
+            character in "0123456789abcdef" for character in arguments.expected_commit
         ),
         "expected commit must be a lowercase 40-hex Git SHA",
     )
