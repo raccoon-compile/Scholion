@@ -14,7 +14,7 @@ Canonical transcript JSON is authoritative transcript evidence. Human-authored r
 
 A *scholion* is an explanatory, critical, or interpretive note attached to a text; the plural is *scholia*. The name matches the product's evidence model: the recording and canonical transcript remain the source evidence, while human notes, labels, collections, and saved research questions accumulate around verified passages without replacing the source. See **[Product identity](docs/product-identity.md)** for the canonical naming contract.
 
-Start with **[docs/README.md](docs/README.md)** for human-facing documentation or **[Getting started](docs/getting-started.md)** for the shortest clone-to-transcript path. The desktop also keeps contextual help available inside the app so ordinary use does not depend on having repository docs open. See **[Privacy Policy](PRIVACY.md)** for the project's user-data and network-activity contract.
+Start with **[docs/README.md](docs/README.md)** for human-facing documentation or **[Getting started](docs/getting-started.md)** for the shortest clone-to-transcript path. The desktop also keeps contextual help available inside the app so ordinary use does not depend on having repository docs open. See **[Privacy Policy](PRIVACY.md)** for the project's user-data and network-activity contract. See **[Code signing policy](docs/security/code-signing-policy.md)** for the provider-neutral release-signing and final-byte trust contract.
 
 ## macOS distribution notice
 

@@ -230,7 +230,33 @@ jobs:
           mkdir -p "$mount_point"
           hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mount_point"
           trap 'hdiutil detach "$mount_point" >/dev/null 2>&1 || true' EXIT
-          runtime="$mount_point/Scholion.app/Contents/Resources/runtime/scholion-runtime"
+          app_bundle="$mount_point/Scholion.app"
+          BUNDLE_PLIST="$app_bundle/Contents/Info.plist" \
+          TAURI_CONFIG="frontend/src-tauri/tauri.conf.json" \
+          python - <<'PY'
+          import json
+          import os
+          import plistlib
+          from pathlib import Path
+
+          config = json.loads(Path(os.environ["TAURI_CONFIG"]).read_text())
+          with Path(os.environ["BUNDLE_PLIST"]).open("rb") as handle:
+              bundle = plistlib.load(handle)
+
+          expected = {
+              "CFBundleIdentifier": config["identifier"],
+              "CFBundleShortVersionString": config["version"],
+              "CFBundleName": config["productName"],
+          }
+          mismatches = {
+              key: {"expected": value, "actual": bundle.get(key)}
+              for key, value in expected.items()
+              if bundle.get(key) != value
+          }
+          if mismatches:
+              raise SystemExit(f"macOS bundle identity mismatch: {mismatches}")
+          PY
+          runtime="$app_bundle/Contents/Resources/runtime/scholion-runtime"
           test -x "$runtime"
           uv run --no-sync python scripts/verify_packaged_media_tools.py \
             --runtime "$runtime" \
@@ -260,6 +286,15 @@ jobs:
             throw "Tauri did not produce an NSIS installer"
           }
 
+          $releaseConfig = Get-Content "frontend/src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json
+          $installerVersion = $installer.VersionInfo
+          if ($installerVersion.ProductName -ne $releaseConfig.productName) {
+            throw "NSIS product name mismatch: expected '$($releaseConfig.productName)', found '$($installerVersion.ProductName)'"
+          }
+          if (-not $installerVersion.ProductVersion.StartsWith($releaseConfig.version)) {
+            throw "NSIS product version mismatch: expected '$($releaseConfig.version)', found '$($installerVersion.ProductVersion)'"
+          }
+
           $installDir = Join-Path $env:RUNNER_TEMP "scholion-preview-install"
           $retainedWorkspace = Join-Path $env:RUNNER_TEMP "scholion-retained-user-workspace"
           $reinstallWorkspace = Join-Path $env:RUNNER_TEMP "scholion-reinstall-acceptance"
@@ -274,6 +309,13 @@ jobs:
             $runtime = Join-Path $installDir "runtime\scholion-runtime.exe"
             if (-not (Test-Path $runtime -PathType Leaf)) {
               throw "Installed Scholion runtime is missing"
+            }
+            $runtimeVersion = (Get-Item $runtime).VersionInfo
+            if ($runtimeVersion.ProductName -ne $releaseConfig.productName) {
+              throw "Frozen runtime product name mismatch: expected '$($releaseConfig.productName)', found '$($runtimeVersion.ProductName)'"
+            }
+            if (-not $runtimeVersion.ProductVersion.StartsWith($releaseConfig.version)) {
+              throw "Frozen runtime product version mismatch: expected '$($releaseConfig.version)', found '$($runtimeVersion.ProductVersion)'"
             }
             return $runtime
           }
@@ -330,6 +372,13 @@ jobs:
           if ($nativeHosts.Count -ne 1) {
             throw "Expected exactly one packaged native Scholion host"
           }
+          $nativeHostVersion = $nativeHosts[0].VersionInfo
+          if ($nativeHostVersion.ProductName -ne $releaseConfig.productName) {
+            throw "Native host product name mismatch: expected '$($releaseConfig.productName)', found '$($nativeHostVersion.ProductName)'"
+          }
+          if (-not $nativeHostVersion.ProductVersion.StartsWith($releaseConfig.version)) {
+            throw "Native host product version mismatch: expected '$($releaseConfig.version)', found '$($nativeHostVersion.ProductVersion)'"
+          }
           uv run --no-sync python scripts/verify_production_update_fixture.py --native-verifier $nativeHosts[0].FullName --fixture-dir packaging/release-trust/update-qualification
           if ($LASTEXITCODE -ne 0) {
             throw "Installed Scholion production update-signature qualification failed"
@@ -364,6 +413,13 @@ jobs:
           $nativeHosts = @(Get-ChildItem $installDir -File -Filter *.exe | Where-Object { $_.Name -ne "uninstall.exe" })
           if ($nativeHosts.Count -ne 1) {
             throw "Expected exactly one packaged native Scholion host after reinstall"
+          }
+          $nativeHostVersion = $nativeHosts[0].VersionInfo
+          if ($nativeHostVersion.ProductName -ne $releaseConfig.productName) {
+            throw "Reinstalled native host product name mismatch: expected '$($releaseConfig.productName)', found '$($nativeHostVersion.ProductName)'"
+          }
+          if (-not $nativeHostVersion.ProductVersion.StartsWith($releaseConfig.version)) {
+            throw "Reinstalled native host product version mismatch: expected '$($releaseConfig.version)', found '$($nativeHostVersion.ProductVersion)'"
           }
           uv run --no-sync python scripts/verify_production_update_fixture.py --native-verifier $nativeHosts[0].FullName --fixture-dir packaging/release-trust/update-qualification
           if ($LASTEXITCODE -ne 0) {
@@ -436,6 +492,11 @@ jobs:
               "runner_os": os.environ["RUNNER_OS"],
               "platform_lifecycle": platform_lifecycle,
               "release_ready": False,
+              "platform_trust": {
+                  "scholion_release_verified": False,
+                  "os_publisher_verified": False,
+                  "os_notarized": False if os.environ["RUNNER_OS"] == "macOS" else None,
+              },
               "managed_media_tools_evidence_sha256": hashlib.sha256(media_evidence_bytes).hexdigest(),
               "release_trust_inputs_evidence_sha256": hashlib.sha256(trust_evidence_bytes).hexdigest(),
               "qualified": {
@@ -451,9 +512,10 @@ jobs:
                   "locked_and_audited_packaging_toolchain": True,
                   "runtime_excludes_development_tooling": True,
                   "reviewed_master_native_icon_generation": True,
-                  "pyinstaller_exact_6_22_2": True,
+                  "pyinstaller_exact_6_22_3": True,
                   "tauri_package_build": True,
                   "exact_package_install_or_mount": True,
+                  "package_identity_metadata": True,
                   "artifact_sha256": True,
               },
               "remaining_release_gates": [
