@@ -310,6 +310,13 @@ jobs:
             if (-not (Test-Path $runtime -PathType Leaf)) {
               throw "Installed Scholion runtime is missing"
             }
+            $runtimeVersion = (Get-Item $runtime).VersionInfo
+            if ($runtimeVersion.ProductName -ne $releaseConfig.productName) {
+              throw "Frozen runtime product name mismatch: expected '$($releaseConfig.productName)', found '$($runtimeVersion.ProductName)'"
+            }
+            if (-not $runtimeVersion.ProductVersion.StartsWith($releaseConfig.version)) {
+              throw "Frozen runtime product version mismatch: expected '$($releaseConfig.version)', found '$($runtimeVersion.ProductVersion)'"
+            }
             return $runtime
           }
 
