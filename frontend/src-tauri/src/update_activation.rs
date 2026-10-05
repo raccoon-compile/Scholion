@@ -182,8 +182,12 @@ mod tests {
 
     #[test]
     fn ticket_parser_rejects_path_or_platform_substitution() {
-        let temporary = tempfile::tempdir().expect("temporary directory");
-        let package = temporary.path().join("candidate.bin");
+        let temporary = std::env::temp_dir().join(format!(
+            "scholion-activation-test-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&temporary).expect("temporary directory");
+        let package = temporary.join("candidate.bin");
         std::fs::write(&package, b"candidate").expect("write candidate");
 
         let wrong_platform = if expected_platform_id().as_deref() == Some("windows-x86_64") {
@@ -209,6 +213,8 @@ mod tests {
             "error": null,
         });
         assert!(parse_ticket(relative).is_err());
+        let _ = std::fs::remove_file(package);
+        let _ = std::fs::remove_dir(temporary);
     }
 
     #[test]
