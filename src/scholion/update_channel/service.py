@@ -87,6 +87,28 @@ def _copy_bounded_artifact(
     return total, digest.hexdigest()
 
 
+def _measure_staged_artifact(path: Path, *, expected_size: int) -> tuple[int, str]:
+    if path.is_symlink() or not path.is_file():
+        raise UpdateChannelError("The staged update package is missing")
+    digest = sha256()
+    total = 0
+    try:
+        with path.open("rb") as handle:
+            while True:
+                chunk = handle.read(_DOWNLOAD_CHUNK_BYTES)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > expected_size:
+                    raise UpdateChannelError(
+                        "The staged update package no longer matches signed metadata"
+                    )
+                digest.update(chunk)
+    except OSError as exc:
+        raise UpdateChannelError("The staged update package could not be read") from exc
+    return total, digest.hexdigest()
+
+
 class HttpsUpdateTransport:
     """Small HTTPS-only transport with no installation or behavioral identifier."""
 
@@ -499,6 +521,70 @@ class UpdateChannelService:
             "available_version": payload.version,
             "download_size_bytes": artifact.size_bytes,
             "message": self._message("staged", payload.version),
+        }
+
+    def prepare_activation(self, *, now: datetime | None = None) -> dict[str, object]:
+        """Re-verify staged release authority immediately before native handoff.
+
+        This method deliberately does not execute an installer or expose the staged path.
+        The native host owns the eventual platform-specific activation boundary.
+        """
+        if self.verifier is None:
+            return self.status()
+        state = self.state_store.load()
+        if (
+            state.last_status != "staged"
+            or state.trusted_manifest is None
+            or state.highest_trusted_sequence is None
+        ):
+            raise UpdateChannelError(
+                "A trusted staged update is required before installation preparation"
+            )
+
+        try:
+            payload = verify_signed_update_manifest(
+                state.trusted_manifest,
+                verifier=self.verifier,
+                now=now or datetime.now(UTC),
+                highest_seen_sequence=state.highest_trusted_sequence,
+            )
+            artifact = payload.artifact_for(self.platform_id)
+        except UpdateTrustError as exc:
+            raise UpdateChannelError(
+                "Stored update metadata is no longer trusted"
+            ) from exc
+        self._require_expected_channel(payload.channel)
+        if not _is_newer(payload.version, self.current_version):
+            raise UpdateChannelError("The trusted release is not newer than this build")
+
+        destination = (
+            self.cache_dir
+            / "updates"
+            / "staged"
+            / f"release-{payload.sequence}-{self.platform_id}.bin"
+        )
+        observed_size, observed_sha256 = _measure_staged_artifact(
+            destination,
+            expected_size=artifact.size_bytes,
+        )
+        if (
+            observed_size != artifact.size_bytes
+            or observed_sha256 != artifact.sha256_hex
+        ):
+            raise UpdateChannelError(
+                "The staged update package no longer matches signed metadata"
+            )
+
+        return {
+            "enabled": True,
+            "state": "staged",
+            "activation_state": "ready_to_install",
+            "current_version": self.current_version,
+            "available_version": payload.version,
+            "download_size_bytes": artifact.size_bytes,
+            "message": (
+                f"Scholion re-verified update {payload.version} for native installation."
+            ),
         }
 
     def _require_expected_channel(self, channel: str) -> None:

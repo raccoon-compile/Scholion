@@ -111,13 +111,13 @@ Merged PR #144 completed the application-side trust mechanics:
 - stable-channel and platform enforcement;
 - private local trust state without an installation ID;
 - streamed artifact staging with exact signed byte count and SHA-256;
-- explicit Off / Never checked / Checking / Up to date / Trusted update available / Staging / Staged / Failure UI states;
+- explicit Off / Never checked / Checking / Up to date / Trusted update available / Staging / Staged / Ready for installation handoff / Failure UI states;
 - project-owned model-trust catalog/enforcement mechanics; and
 - deterministic release/model metadata generation tooling.
 
 PR #170 then completed the native verifier plumbing with exact-pinned `ed25519-dalek` 3.0.0, strict verification, a fixed bounded native verification protocol, and packaged-only verifier activation. PR #172 added deterministic public trust-input custody and package overlay/verification, and PR #180 added public-key catalog construction plus the external ceremony runbook. None of those changes put a private signing key in the repository or substitute synthetic material for the real #177 ceremony.
 
-A staged update is deliberately **not** called installed. Native activation plus OS package platform trust qualification remains a later packaging boundary.
+A staged update is deliberately **not** called installed. Pre-handoff readiness now re-verifies the cached signed metadata and exact staged bytes, but native execution plus the applicable OS platform-trust qualification remains a later boundary.
 
 ## 3. Pre-packaging release readiness complete (#145)
 
@@ -176,8 +176,8 @@ PR #183 and the speaker-count desktop polish do not change this release sequence
 
 After #168 is complete, the remaining release gates are explicitly ordered:
 
-1. #173 Windows code signing and macOS Developer ID platform trust qualification of the production-shaped package bytes;
-2. #174 platform-safe native update activation that executes only an already trusted, OS-signed candidate;
+1. #173 Windows code signing and macOS non-Apple-notarized open-source distribution trust qualification of the production-shaped package bytes;
+2. #174 platform-safe native update activation that executes only an already project-trusted candidate after the applicable platform trust policy is satisfied;
 3. #114 representative package/device qualification, including CPU-only/accelerator/Apple/Windows task transport and offline/repair/update behavior; and
 4. #175 final production release checksums/provenance/SBOM/signature publication bound to the same qualified bytes.
 
@@ -234,6 +234,6 @@ A future notebook page should live in authoritative SQLite as its own research-d
 
 The rule is now intentionally boring:
 
-**finish #168 production-shaped qualification → #173 sign/notarize → #174 activate updates natively → #114 qualify representative devices → #175 publish the MVP release.**
+**finish #168 production-shaped qualification → #173 platform distribution trust → #174 activate updates natively → #114 qualify representative devices → #175 publish the MVP release.**
 
 Do not reopen completed product, lifecycle/provenance, native-verifier/custody, or managed-media tranches merely because later research or portability features are interesting. Do not call production secrets, real upstream trust decisions, OS signing, native activation, or representative-device evidence “implemented” until they actually exist.

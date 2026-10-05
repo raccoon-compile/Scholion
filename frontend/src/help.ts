@@ -96,8 +96,9 @@ export const HELP_TOPICS: Record<HelpTopicId, HelpTopic> = {
       "The request does not include an installation ID, recording or transcript data, research state, hardware inventory, model inventory, or behavioral telemetry.",
       "GitHub or its delivery network can still see ordinary connection metadata such as your IP address and request time.",
       "Local evidence work remains available when update checking is off, unavailable, or offline.",
+      "Prepare for installation re-verifies the signed release metadata and exact staged bytes without exposing a path or executing an installer.",
     ],
-    note: "A verified Scholion release manifest is separate from operating-system application signing. Public release packages must satisfy both trust layers before installation is enabled.",
+    note: "A verified Scholion release manifest is separate from operating-system application trust. Pre-handoff readiness is not installation; the applicable platform trust boundary must still be satisfied before native execution is enabled.",
   },
   evidence: {
     title: "Using the transcript reader",

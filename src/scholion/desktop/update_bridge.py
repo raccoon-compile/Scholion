@@ -25,7 +25,12 @@ class _UpdateRequest(BaseModel):
 
     protocol_version: Literal[1]
     request_id: str = Field(min_length=1, max_length=128)
-    method: Literal["updates.status", "updates.check", "updates.stage"]
+    method: Literal[
+        "updates.status",
+        "updates.check",
+        "updates.stage",
+        "updates.prepare_activation",
+    ]
     params: dict[str, object] = Field(default_factory=dict)
 
 
@@ -64,8 +69,10 @@ def handle_request(
             result = service.status()
         elif request.method == "updates.check":
             result = service.check()
-        else:
+        elif request.method == "updates.stage":
             result = service.stage()
+        else:
+            result = service.prepare_activation()
     except UpdateChannelError:
         return failure_response(
             request.request_id,

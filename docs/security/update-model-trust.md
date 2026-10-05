@@ -126,7 +126,7 @@ This protects against network/hosting rollback. It is not a defense against a sa
 - fsync before activation into staged custody; and
 - atomic local replacement of the staged file.
 
-A staged package is **not installed**. Native platform activation remains a separate trust boundary because Windows/macOS/Linux packaging, applicable platform trust policy, rollback behavior, and process replacement are platform responsibilities. The UI says this explicitly instead of presenting staging as installation.
+A staged package is **not installed**. Scholion can re-verify the cached signed manifest and exact staged size/SHA-256 immediately before native handoff without exposing the staged path to React or executing anything. Native platform activation remains a separate trust boundary because Windows/macOS/Linux packaging, applicable platform trust policy, rollback behavior, and process replacement are platform responsibilities. The UI says this explicitly instead of presenting staging or readiness as installation.
 
 ## Release metadata generation
 

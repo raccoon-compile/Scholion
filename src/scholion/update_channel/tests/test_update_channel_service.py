@@ -1,6 +1,7 @@
 import base64
 import json
 from datetime import UTC, datetime, timedelta
+from hashlib import sha256
 from pathlib import Path
 from typing import Any, cast
 
@@ -98,6 +99,8 @@ def _payload(
     version: str = "0.2.0",
     platform_id: str = "windows-x86_64",
     channel: str = "stable",
+    artifact_size: int = 42,
+    artifact_sha256: str = "a" * 64,
 ) -> bytes:
     document = {
         "schema_version": 1,
@@ -111,8 +114,8 @@ def _payload(
             {
                 "platform": platform_id,
                 "url": "https://github.com/raccoon-compile/Scholion/releases/download/v0.2.0/app.bin",
-                "size_bytes": 42,
-                "sha256": "a" * 64,
+                "size_bytes": artifact_size,
+                "sha256": artifact_sha256,
             }
         ],
     }
@@ -172,6 +175,7 @@ def test_source_build_without_verifier_stays_off_and_never_fetches(
     assert channel.status()["state"] == "off"
     assert channel.check(now=_NOW)["state"] == "off"
     assert channel.stage(now=_NOW)["state"] == "off"
+    assert channel.prepare_activation(now=_NOW)["state"] == "off"
     assert transport.fetch_calls == []
 
 
@@ -300,6 +304,95 @@ def test_stage_requires_prior_trusted_check_and_newer_release(tmp_path: Path) ->
     channel.check(now=_NOW)
     with pytest.raises(UpdateChannelError, match="not newer"):
         channel.stage(now=_NOW)
+
+
+def test_prepare_activation_reverifies_manifest_and_exact_staged_bytes(
+    tmp_path: Path,
+) -> None:
+    artifact_bytes = b"qualified update artifact"
+    digest = sha256(artifact_bytes).hexdigest()
+    payload = _payload(
+        sequence=11,
+        version="0.4.0",
+        artifact_size=len(artifact_bytes),
+        artifact_sha256=digest,
+    )
+    channel, _, verifier, _ = _service(tmp_path, payload)
+    channel.check(now=_NOW)
+    channel.stage(now=_NOW)
+
+    staged_path = (
+        tmp_path / "cache" / "updates" / "staged" / "release-11-windows-x86_64.bin"
+    )
+    staged_path.parent.mkdir(parents=True, exist_ok=True)
+    staged_path.write_bytes(artifact_bytes)
+
+    prepared = channel.prepare_activation(now=_NOW)
+
+    assert prepared == {
+        "enabled": True,
+        "state": "staged",
+        "activation_state": "ready_to_install",
+        "current_version": "0.1.0",
+        "available_version": "0.4.0",
+        "download_size_bytes": len(artifact_bytes),
+        "message": "Scholion re-verified update 0.4.0 for native installation.",
+    }
+    assert verifier.calls == 3
+
+
+def test_prepare_activation_fails_closed_for_missing_or_mutated_stage(
+    tmp_path: Path,
+) -> None:
+    artifact_bytes = b"qualified update artifact"
+    digest = sha256(artifact_bytes).hexdigest()
+    payload = _payload(
+        sequence=12,
+        version="0.5.0",
+        artifact_size=len(artifact_bytes),
+        artifact_sha256=digest,
+    )
+    channel, _, _, _ = _service(tmp_path, payload)
+
+    with pytest.raises(UpdateChannelError, match="trusted staged update"):
+        channel.prepare_activation(now=_NOW)
+
+    channel.check(now=_NOW)
+    channel.stage(now=_NOW)
+    staged_path = (
+        tmp_path / "cache" / "updates" / "staged" / "release-12-windows-x86_64.bin"
+    )
+
+    with pytest.raises(UpdateChannelError, match="missing"):
+        channel.prepare_activation(now=_NOW)
+
+    staged_path.parent.mkdir(parents=True, exist_ok=True)
+    staged_path.write_bytes(b"x" * len(artifact_bytes))
+    with pytest.raises(UpdateChannelError, match="no longer matches"):
+        channel.prepare_activation(now=_NOW)
+
+
+def test_prepare_activation_rejects_expired_cached_manifest(tmp_path: Path) -> None:
+    artifact_bytes = b"qualified update artifact"
+    digest = sha256(artifact_bytes).hexdigest()
+    payload = _payload(
+        sequence=13,
+        version="0.6.0",
+        artifact_size=len(artifact_bytes),
+        artifact_sha256=digest,
+    )
+    channel, _, _, _ = _service(tmp_path, payload)
+    channel.check(now=_NOW)
+    channel.stage(now=_NOW)
+
+    staged_path = (
+        tmp_path / "cache" / "updates" / "staged" / "release-13-windows-x86_64.bin"
+    )
+    staged_path.parent.mkdir(parents=True, exist_ok=True)
+    staged_path.write_bytes(artifact_bytes)
+
+    with pytest.raises(UpdateChannelError, match="no longer trusted"):
+        channel.prepare_activation(now=_NOW + timedelta(days=8))
 
 
 def test_state_store_fails_closed_on_malformed_or_partial_state(tmp_path: Path) -> None:

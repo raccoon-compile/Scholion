@@ -122,7 +122,7 @@ Research/search, Processing, desktop comprehension/themes, transcript/speaker to
 
 Research uses ordinary product language by default. Processing presents backend planning/admission rather than duplicating it. Multi-track selection is backend-required and backend-replanned. Transcript tools pass exact generation identity into Python for details, speaker mutation, and publication. Playback does the same for source authorization, then Rust owns an opaque opened-file session.
 
-Storage follows the same rule: React sends typed lifecycle intent and renders a plan calculated by application authority; Python recalculates at apply time and refuses stale confirmation. Updates likewise exposes only status/check/stage intent while application code owns endpoint, platform, trust state, and artifact selection.
+Storage follows the same rule: React sends typed lifecycle intent and renders a plan calculated by application authority; Python recalculates at apply time and refuses stale confirmation. Updates likewise exposes only status/check/stage plus a no-parameter pre-installation re-verification intent while application code owns endpoint, platform, trust state, staged path, and artifact selection.
 
 The architecture/redundancy audit remains closed after a post-#144 re-audit. The only new duplicate authority found was update-service construction inside the adapter, now moved back to application-layer composition. Duplicate supply-chain file hashing was also consolidated. The update bridge itself remains separate because network/trust/staging authority is not the same capability as ordinary desktop, playback, custody, or supervised Processing work.
 
@@ -132,8 +132,8 @@ The Scholion identity migration, application-side update/model-trust mechanics, 
 
 The remaining first-release sequence is intentionally narrow:
 
-1. **OS signing/notarization (#173):** sign Windows package bytes and sign/notarize macOS package bytes now that #168 has qualified the real production trust inputs and production-key update signature;
-2. **Native update activation (#174):** execute only an already trusted, OS-signed staged candidate and keep staging distinct from installation until that proof exists;
+1. **Platform distribution trust (#173):** sign Windows package bytes and qualify the macOS non-Apple-notarized open-source distribution path now that #168 has qualified the real production trust inputs and production-key update signature;
+2. **Native update activation (#174):** re-verify and eventually execute only an already project-trusted staged candidate while enforcing each platform's applicable trust policy; staging/readiness remain distinct from installation;
 3. **Representative release qualification (#114):** exercise real packaged CPU-only/accelerator/Apple/Windows behavior, offline/update/repair/lifecycle cases, accessibility/device behavior, and the remaining native task-transport evidence; and
 4. **MVP release (#175):** publish the final candidate with checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same bytes.
 
