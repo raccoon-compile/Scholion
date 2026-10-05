@@ -97,7 +97,7 @@ export const HELP_TOPICS: Record<HelpTopicId, HelpTopic> = {
       "GitHub or its delivery network can still see ordinary connection metadata such as your IP address and request time.",
       "Local evidence work remains available when update checking is off, unavailable, or offline.",
       "Prepare for installation re-verifies the signed release metadata and exact staged bytes without exposing a path to the interface.",
-      "Continue installation uses a zero-argument native handoff. macOS keeps Gatekeeper in force, while Windows refuses activation until required publisher trust is available.",
+      "Continue installation uses a zero-argument native handoff. macOS applies and verifies quarantine metadata before opening the exact DMG, while Windows refuses activation until required publisher trust is available.",
     ],
     note: "A verified Scholion release manifest is separate from operating-system application trust. Ready or handed off does not mean installed; platform approval, replacement, or restart can still remain."
   },
