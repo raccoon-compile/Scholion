@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import type { UpdateClient, UpdateStatus } from "./api/updates";
+import type { UpdateActivationResult, UpdateClient, UpdateStatus } from "./api/updates";
 import { type Theme, WorkspaceHeader } from "./components/WorkspaceHeader";
 
 interface UpdatesWorkspaceProps {
@@ -9,7 +9,13 @@ interface UpdatesWorkspaceProps {
   onThemeChange: (theme: Theme) => void;
 }
 
-type TransientState = "idle" | "checking" | "staging" | "preparing" | "failure";
+type TransientState =
+  | "idle"
+  | "checking"
+  | "staging"
+  | "preparing"
+  | "activating"
+  | "failure";
 
 function formatBytes(value: number | undefined): string | null {
   if (value === undefined) return null;
@@ -23,11 +29,17 @@ function formatBytes(value: number | undefined): string | null {
   return `${amount.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
-function stateTitle(status: UpdateStatus | null, transient: TransientState): string {
+function stateTitle(
+  status: UpdateStatus | null,
+  transient: TransientState,
+  activation: UpdateActivationResult | null,
+): string {
   if (transient === "checking") return "Checking for updates";
   if (transient === "staging") return "Verifying update package";
   if (transient === "preparing") return "Re-verifying staged update";
-  if (transient === "failure") return "Update check could not finish";
+  if (transient === "activating") return "Handing update to the operating system";
+  if (transient === "failure") return "Update action could not finish";
+  if (activation?.activation_state === "handoff_started") return "Installation handoff started";
   if (!status) return "Loading update state";
   if (status.activation_state === "ready_to_install") return "Ready for installation handoff";
   switch (status.state) {
@@ -52,6 +64,7 @@ export function UpdatesWorkspace({
   const [status, setStatus] = useState<UpdateStatus | null>(null);
   const [transient, setTransient] = useState<TransientState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [activation, setActivation] = useState<UpdateActivationResult | null>(null);
 
   const loadStatus = useCallback(async () => {
     try {
@@ -101,6 +114,7 @@ export function UpdatesWorkspace({
   async function prepareActivation() {
     setTransient("preparing");
     setError(null);
+    setActivation(null);
     try {
       setStatus(await updates.prepareActivation());
       setTransient("idle");
@@ -114,8 +128,27 @@ export function UpdatesWorkspace({
     }
   }
 
+  async function activateUpdate() {
+    setTransient("activating");
+    setError(null);
+    try {
+      setActivation(await updates.activate());
+      setTransient("idle");
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Scholion could not hand the verified update to the operating system",
+      );
+      setTransient("failure");
+    }
+  }
+
   const busy =
-    transient === "checking" || transient === "staging" || transient === "preparing";
+    transient === "checking" ||
+    transient === "staging" ||
+    transient === "preparing" ||
+    transient === "activating";
   const size = formatBytes(status?.download_size_bytes);
 
   return (
@@ -130,7 +163,7 @@ export function UpdatesWorkspace({
       <div className="updates-grid">
         <article className="updates-card" aria-labelledby="update-state-heading">
           <p className="eyebrow">Update state</p>
-          <h2 id="update-state-heading">{stateTitle(status, transient)}</h2>
+          <h2 id="update-state-heading">{stateTitle(status, transient, activation)}</h2>
           <p role="status" aria-live="polite">
             {transient === "checking"
               ? "Fetching a small signed release manifest and verifying it on this computer."
@@ -138,7 +171,12 @@ export function UpdatesWorkspace({
                 ? "Downloading the signed release package and checking its exact size and SHA-256 before staging it."
                 : transient === "preparing"
                   ? "Re-checking the signed release metadata and exact staged bytes before native installation handoff."
-                  : error ?? status?.message ?? "Reading local update state…"}
+                  : transient === "activating"
+                    ? "Passing the exact verified package to the operating system through Scholion's fixed native boundary."
+                    : error ??
+                      activation?.message ??
+                      status?.message ??
+                      "Reading local update state…"}
           </p>
 
           {status && (
@@ -193,6 +231,16 @@ export function UpdatesWorkspace({
                     : "Prepare for installation"}
                 </button>
               )}
+            {status?.activation_state === "ready_to_install" && !activation && (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => void activateUpdate()}
+                disabled={busy}
+              >
+                {transient === "activating" ? "Handing off…" : "Continue installation"}
+              </button>
+            )}
           </div>
         </article>
 
@@ -220,11 +268,17 @@ export function UpdatesWorkspace({
 
       {status?.state === "staged" && transient === "idle" && (
         <div className="updates-boundary-note" role="note">
-          {status.activation_state === "ready_to_install" ? (
+          {activation?.activation_state === "handoff_started" ? (
             <>
-              <strong>Exact staged bytes re-verified.</strong> Scholion is ready for the native
-              installation handoff, but this build still will not execute an installer until the
-              applicable operating-system trust and activation boundary is enabled.
+              <strong>Operating-system handoff started.</strong> Scholion has not declared the
+              update installed. Complete any operating-system replacement, approval, or restart
+              step it presents.
+            </>
+          ) : status.activation_state === "ready_to_install" ? (
+            <>
+              <strong>Exact staged bytes re-verified.</strong> Continue installation asks the
+              native host to hand off only this verified package. Platform security checks remain
+              in force and can still refuse the update.
             </>
           ) : (
             <>
