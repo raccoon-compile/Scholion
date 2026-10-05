@@ -151,9 +151,7 @@ fn apply_and_verify_macos_quarantine(path: &Path) -> Result<(), String> {
         .stdin(Stdio::null())
         .output()
         .map_err(|_| "macOS quarantine metadata could not be verified".to_string())?;
-    if !observed.status.success()
-        || String::from_utf8_lossy(&observed.stdout).trim_end() != value
-    {
+    if !observed.status.success() || String::from_utf8_lossy(&observed.stdout).trim_end() != value {
         return Err("macOS quarantine metadata could not be verified".to_string());
     }
     Ok(())
@@ -179,12 +177,10 @@ fn activate_platform(ticket: ActivationTicket) -> Result<ActivationOutcome, Stri
     Ok(ActivationOutcome {
         activation_state: "handoff_started",
         version: ticket.version,
-        message: (
-            "macOS quarantined and opened the exact verified Scholion disk image. "
-                .to_string()
-                + "Complete the replacement through the operating system; Gatekeeper and any "
-                + "per-app approval remain in effect."
-        ),
+        message: ("macOS quarantined and opened the exact verified Scholion disk image. "
+            .to_string()
+            + "Complete the replacement through the operating system; Gatekeeper and any "
+            + "per-app approval remain in effect."),
     })
 }
 
@@ -227,10 +223,8 @@ mod tests {
 
     #[test]
     fn ticket_parser_rejects_path_or_platform_substitution() {
-        let temporary = std::env::temp_dir().join(format!(
-            "scholion-activation-test-{}",
-            std::process::id()
-        ));
+        let temporary =
+            std::env::temp_dir().join(format!("scholion-activation-test-{}", std::process::id()));
         std::fs::create_dir_all(&temporary).expect("temporary directory");
         let package = temporary.join("candidate.bin");
         std::fs::write(&package, b"candidate").expect("write candidate");
