@@ -190,6 +190,12 @@ def _require_update_service_behavior(
         if staged_path.read_bytes() != artifacts[selected.url]:
             raise RuntimeError("staged qualification artifact bytes changed")
 
+        prepared = service.prepare_activation(now=_FIXED_NOW)
+        if prepared.get("activation_state") != "ready_to_install":
+            raise RuntimeError(
+                "production-signed fixture was not re-verified for native handoff"
+            )
+
     return {
         "platform": platform_id,
         "sequence": parsed.sequence,
@@ -198,6 +204,7 @@ def _require_update_service_behavior(
         "artifact_sha256": selected.sha256_hex,
         "check_state": "trusted_update_available",
         "stage_state": "staged",
+        "activation_state": "ready_to_install",
     }
 
 
