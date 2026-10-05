@@ -132,13 +132,13 @@ export function UpdatesWorkspace({
           <p className="eyebrow">Update state</p>
           <h2 id="update-state-heading">{stateTitle(status, transient)}</h2>
           <p role="status" aria-live="polite">
-            {busy
-              ? transient === "checking"
-                ? "Fetching a small signed release manifest and verifying it on this computer."
-                : "Downloading the signed release package and checking its exact size and SHA-256 before staging it."
-              : transient === "preparing"
-                ? "Re-checking the signed release metadata and exact staged bytes before native installation handoff."
-                : error ?? status?.message ?? "Reading local update state…"}
+            {transient === "checking"
+              ? "Fetching a small signed release manifest and verifying it on this computer."
+              : transient === "staging"
+                ? "Downloading the signed release package and checking its exact size and SHA-256 before staging it."
+                : transient === "preparing"
+                  ? "Re-checking the signed release metadata and exact staged bytes before native installation handoff."
+                  : error ?? status?.message ?? "Reading local update state…"}
           </p>
 
           {status && (
