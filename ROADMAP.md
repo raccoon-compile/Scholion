@@ -117,7 +117,7 @@ Merged PR #144 completed the application-side trust mechanics:
 
 PR #170 then completed the native verifier plumbing with exact-pinned `ed25519-dalek` 3.0.0, strict verification, a fixed bounded native verification protocol, and packaged-only verifier activation. PR #172 added deterministic public trust-input custody and package overlay/verification, and PR #180 added public-key catalog construction plus the external ceremony runbook. None of those changes put a private signing key in the repository or substitute synthetic material for the real #177 ceremony.
 
-A staged update is deliberately **not** called installed. Pre-handoff readiness re-verifies the cached signed metadata and exact staged bytes. A private Rust-owned handoff now opens only the exact verified DMG on macOS; Windows activation remains fail-closed until its publisher trust can be verified.
+A staged update is deliberately **not** called installed. Pre-handoff readiness re-verifies the cached signed metadata and exact staged bytes. A private Rust-owned handoff now applies/verifies macOS quarantine metadata and opens only the exact verified DMG; Windows activation remains fail-closed until its publisher trust can be verified.
 
 ## 3. Pre-packaging release readiness complete (#145)
 
