@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.metadata
+import re
 import shutil
 import sys
 import tempfile
@@ -29,6 +30,57 @@ def _repository_root() -> Path:
 def _runtime_executable(runtime_dir: Path) -> Path:
     name = "scholion-runtime.exe" if sys.platform == "win32" else "scholion-runtime"
     return runtime_dir / name
+
+
+def _windows_version_tuple(version: str) -> tuple[int, int, int, int]:
+    values: list[int] = []
+    for component in version.split(".")[:4]:
+        match = re.match(r"\d+", component)
+        values.append(int(match.group(0)) if match else 0)
+    while len(values) < 4:
+        values.append(0)
+    return tuple(values)  # type: ignore[return-value]
+
+
+def _write_windows_version_file(directory: Path) -> Path:
+    version = importlib.metadata.version("scholion")
+    numeric = _windows_version_tuple(version)
+    path = directory / "scholion-runtime-version.txt"
+    path.write_text(
+        f"""# UTF-8
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers={numeric},
+    prodvers={numeric},
+    mask=0x3f,
+    flags=0x0,
+    OS=0x4,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0),
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable(
+        u'040904B0',
+        [
+          StringStruct(u'CompanyName', u'Scholion'),
+          StringStruct(u'FileDescription', u'Scholion local evidence runtime'),
+          StringStruct(u'FileVersion', u'{version}'),
+          StringStruct(u'InternalName', u'scholion-runtime'),
+          StringStruct(u'OriginalFilename', u'scholion-runtime.exe'),
+          StringStruct(u'ProductName', u'Scholion'),
+          StringStruct(u'ProductVersion', u'{version}'),
+        ],
+      ),
+    ]),
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])]),
+  ],
+)
+""",
+        encoding="utf-8",
+    )
+    return path
 
 
 def _managed_media_files(media_tools_dir: Path) -> tuple[Path, Path, Path]:
@@ -60,6 +112,7 @@ def _pyinstaller_arguments(
     dist_path: Path,
     work_path: Path,
     spec_path: Path,
+    version_file: Path | None = None,
 ) -> list[str]:
     arguments = [
         "--noconfirm",
@@ -85,6 +138,8 @@ def _pyinstaller_arguments(
     ]
     for distribution in _RUNTIME_METADATA:
         arguments.extend(("--copy-metadata", distribution))
+    if version_file is not None:
+        arguments.extend(("--version-file", str(version_file)))
     arguments.extend(
         (
             "--distpath",
@@ -134,12 +189,18 @@ def build_runtime(
         dist_path = temporary_path / "dist"
         work_path = temporary_path / "work"
         spec_path = temporary_path / "spec"
+        version_file = (
+            _write_windows_version_file(temporary_path)
+            if sys.platform == "win32"
+            else None
+        )
         pyinstaller_run(
             _pyinstaller_arguments(
                 root,
                 dist_path,
                 work_path,
                 spec_path,
+                version_file,
             )
         )
         built = dist_path / "scholion-runtime"
