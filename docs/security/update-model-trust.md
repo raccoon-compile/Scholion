@@ -126,7 +126,7 @@ This protects against network/hosting rollback. It is not a defense against a sa
 - fsync before activation into staged custody; and
 - atomic local replacement of the staged file.
 
-A staged package is **not installed**. Scholion re-verifies the cached signed manifest and exact staged size/SHA-256 immediately before native handoff. A separate private bridge returns the path-bearing activation ticket only to Rust, never to React. macOS can hand the exact verified DMG to the operating system without weakening Gatekeeper. Windows activation remains fail-closed until the required publisher trust can be verified. Process replacement, approval, restart, and recovery remain platform responsibilities. The UI says this explicitly instead of presenting staging or readiness as installation.
+A staged package is **not installed**. Scholion re-verifies the cached signed manifest and exact staged size/SHA-256 immediately before native handoff. A separate private bridge returns the path-bearing activation ticket only to Rust, never to React. macOS can hand the exact verified DMG to the operating system only after applying and reading back the standard quarantine marker, so the updater does not silently sidestep Gatekeeper. Windows activation remains fail-closed until the required publisher trust can be verified. Process replacement, approval, restart, and recovery remain platform responsibilities. The UI says this explicitly instead of presenting staging or readiness as installation.
 
 ## Release metadata generation
 
