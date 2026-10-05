@@ -61,10 +61,7 @@ def _staged_artifact_path(
 ) -> Path:
     suffix = _artifact_suffix(artifact_url)
     return (
-        cache_dir
-        / "updates"
-        / "staged"
-        / f"release-{sequence}-{platform_id}{suffix}"
+        cache_dir / "updates" / "staged" / f"release-{sequence}-{platform_id}{suffix}"
     )
 
 
