@@ -5,6 +5,8 @@ use std::path::Path;
 use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use std::process::{Command, Stdio};
+#[cfg(target_os = "macos")]
+use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::State;
 
 use crate::backend::{self, DesktopRuntime};
@@ -120,11 +122,51 @@ fn activate_platform(ticket: ActivationTicket) -> Result<ActivationOutcome, Stri
 }
 
 #[cfg(target_os = "macos")]
+fn macos_quarantine_value() -> Result<String, String> {
+    let seconds = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|_| "macOS quarantine timestamp could not be created".to_string())?
+        .as_secs();
+    Ok(format!("0081;{seconds:x};Scholion;"))
+}
+
+#[cfg(target_os = "macos")]
+fn apply_and_verify_macos_quarantine(path: &Path) -> Result<(), String> {
+    let value = macos_quarantine_value()?;
+    let status = Command::new("/usr/bin/xattr")
+        .args(["-w", "com.apple.quarantine", &value])
+        .arg(path)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map_err(|_| "macOS quarantine metadata could not be applied".to_string())?;
+    if !status.success() {
+        return Err("macOS quarantine metadata could not be applied".to_string());
+    }
+
+    let observed = Command::new("/usr/bin/xattr")
+        .args(["-p", "com.apple.quarantine"])
+        .arg(path)
+        .stdin(Stdio::null())
+        .output()
+        .map_err(|_| "macOS quarantine metadata could not be verified".to_string())?;
+    if !observed.status.success()
+        || String::from_utf8_lossy(&observed.stdout).trim_end() != value
+    {
+        return Err("macOS quarantine metadata could not be verified".to_string());
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
 fn activate_platform(ticket: ActivationTicket) -> Result<ActivationOutcome, String> {
     let path = PathBuf::from(&ticket.staged_path);
     if path.extension().and_then(|value| value.to_str()) != Some("dmg") {
         return Err("The staged macOS update is not a disk image".to_string());
     }
+
+    apply_and_verify_macos_quarantine(&path)?;
 
     Command::new("/usr/bin/open")
         .arg(&path)
@@ -138,9 +180,10 @@ fn activate_platform(ticket: ActivationTicket) -> Result<ActivationOutcome, Stri
         activation_state: "handoff_started",
         version: ticket.version,
         message: (
-            "macOS opened the exact verified Scholion disk image. Complete the replacement "
+            "macOS quarantined and opened the exact verified Scholion disk image. "
                 .to_string()
-                + "through the operating system; Gatekeeper and any per-app approval remain in effect."
+                + "Complete the replacement through the operating system; Gatekeeper and any "
+                + "per-app approval remain in effect."
         ),
     })
 }
@@ -217,6 +260,15 @@ mod tests {
         assert!(parse_ticket(relative).is_err());
         let _ = std::fs::remove_file(package);
         let _ = std::fs::remove_dir(temporary);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn quarantine_value_uses_other_download_shape() {
+        let value = macos_quarantine_value().expect("quarantine value");
+        assert!(value.starts_with("0081;"));
+        assert!(value.ends_with(";Scholion;"));
+        assert_eq!(value.split(';').count(), 5);
     }
 
     #[test]
