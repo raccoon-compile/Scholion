@@ -1,0 +1,153 @@
+name: Signing Candidate Prerelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Prerelease tag matching the configured version, e.g. v0.1.0-rc.1"
+        required: true
+        type: string
+      confirm_unsigned_prerelease:
+        description: "Publish explicitly unsigned/non-notarized signing candidates as a prerelease"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: signing-candidate-prerelease
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: validate prerelease request
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact requested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate main-only tag and explicit confirmation
+        shell: python
+        env:
+          RELEASE_TAG: \${{ inputs.release_tag }}
+          CONFIRM_UNSIGNED_PRERELEASE: \${{ inputs.confirm_unsigned_prerelease }}
+          REQUEST_REF: \${{ github.ref }}
+        run: |
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          if os.environ["REQUEST_REF"] != "refs/heads/main":
+              raise SystemExit(
+                  "Signing-candidate prereleases may only be dispatched from main"
+              )
+          if os.environ["CONFIRM_UNSIGNED_PRERELEASE"].lower() != "true":
+              raise SystemExit(
+                  "Explicit unsigned/non-notarized prerelease confirmation is required"
+              )
+
+          config = json.loads(
+              Path("frontend/src-tauri/tauri.conf.json").read_text(encoding="utf-8")
+          )
+          version = config["version"]
+          tag = os.environ["RELEASE_TAG"]
+          pattern = rf"v{re.escape(version)}-rc\.[1-9][0-9]*"
+          if re.fullmatch(pattern, tag) is None:
+              raise SystemExit(
+                  f"release_tag must match v{version}-rc.N with N >= 1; got {tag!r}"
+              )
+
+  qualify:
+    name: qualify exact platform candidates
+    needs: validate
+    uses: ./.github/workflows/release-qualification.yml
+    permissions:
+      contents: read
+
+  publish:
+    name: publish signing-candidate prerelease
+    needs: [validate, qualify]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Check out exact qualified commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download exact qualified Windows candidate
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: scholion-preview-Windows-\${{ github.sha }}
+          path: candidate/windows
+
+      - name: Download exact qualified macOS candidate
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: scholion-preview-macOS-\${{ github.sha }}
+          path: candidate/macos
+
+      - name: Reverify and stage exact prerelease assets
+        run: >-
+          python scripts/prepare_signing_candidate_release.py
+          --windows-artifact-root candidate/windows
+          --macos-artifact-root candidate/macos
+          --expected-commit "\${GITHUB_SHA}"
+          --output-dir release-assets
+
+      - name: Write bounded prerelease disclosure
+        shell: bash
+        env:
+          RELEASE_TAG: \${{ inputs.release_tag }}
+        run: |
+          cat > signing-candidate-notes.md <<EOF
+          # Scholion \${RELEASE_TAG} signing candidate
+
+          This is a **pre-production signing candidate**, not a production Scholion release.
+
+          The Windows NSIS installer is **not yet publisher-signed**. Windows may warn that the publisher is unknown. The macOS DMG is **not Apple Developer ID signed or notarized** and macOS may require explicit per-app approval. Do not disable SmartScreen, Gatekeeper, or other operating-system security controls to run these candidates.
+
+          These artifacts were built and qualified from commit \`\${GITHUB_SHA}\`. The attached \`SHA256SUMS\`, platform qualification records, and deterministic provenance records describe the exact downloadable bytes.
+
+          Scholion's final production release still requires the applicable platform distribution-trust gates, representative-device qualification, trusted native update activation, and final publication evidence. \`release_ready\` remains false for these candidates.
+
+          Source builds remain the supported path while Scholion is pre-production.
+          EOF
+
+      - name: Reject an existing tag or release
+        shell: bash
+        env:
+          GH_TOKEN: \${{ github.token }}
+          RELEASE_TAG: \${{ inputs.release_tag }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/\${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "Tag \${RELEASE_TAG} already exists" >&2
+            exit 1
+          fi
+          if gh release view "\${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "Release \${RELEASE_TAG} already exists" >&2
+            exit 1
+          fi
+
+      - name: Publish GitHub prerelease
+        shell: bash
+        env:
+          GH_TOKEN: \${{ github.token }}
+          RELEASE_TAG: \${{ inputs.release_tag }}
+        run: |
+          gh release create "\${RELEASE_TAG}" \
+            release-assets/* \
+            --repo "\${GITHUB_REPOSITORY}" \
+            --target "\${GITHUB_SHA}" \
+            --title "Scholion \${RELEASE_TAG} signing candidate" \
+            --notes-file signing-candidate-notes.md \
+            --prerelease
