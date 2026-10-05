@@ -45,13 +45,14 @@ See **[Production trust inputs](production-trust-inputs.md)** and **[Release-key
 - streamed staging with signed size and SHA-256 enforcement;
 - private temporary files, fsync, and atomic replacement into the staged cache;
 - signed metadata re-verification immediately before staging;
+- signed metadata plus exact staged size/SHA-256 re-verification immediately before native installation handoff;
 - a closed desktop bridge that accepts no caller URL, path, header, shell command, or installer argument;
 - WebView CSP without general external network authority; and
-- explicit UI states for Off, Never checked, Checking, Up to date, Trusted update available, Staging/Staged, and bounded failure.
+- explicit UI states for Off, Never checked, Checking, Up to date, Trusted update available, Staging/Staged, Ready for installation handoff, and bounded failure.
 
 The user-facing copy states the network truth plainly: GitHub/CDN still sees ordinary connection metadata such as IP address and request time. A failed/offline update check never blocks the local evidence workspace.
 
-**Production gate still required:** #173 Windows signing and macOS open-source trust qualification and #174 native package activation. A staged hash-matching package is not called installed or executable merely because Scholion downloaded it successfully.
+**Production gate still required:** #173 Windows signing and macOS open-source trust qualification plus the remaining #174 native package handoff/execution work. A staged or pre-handoff-reverified package is not called installed or executable merely because Scholion downloaded and rechecked it successfully.
 
 ### Curated model trust root
 
