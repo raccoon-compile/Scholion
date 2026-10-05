@@ -39,8 +39,11 @@ The browser Updates tests prove presentation and state-machine behavior only. A 
 - **Download and verify** stages only the artifact authorized for the current platform;
 - short, oversized, or hash-mismatching downloads leave no trusted staged package;
 - the staged file exactly matches the signed byte count and SHA-256;
-- staging never presents itself as installation; and
-- the eventual activation path verifies the platform application's own signature/notarization before replacing an installed build.
+- **Prepare for installation** re-verifies the cached signed metadata and exact staged bytes immediately before native handoff;
+- missing, expired, mutated, oversized, or hash-mismatching staged state fails closed at preparation time;
+- the staged filesystem path never crosses into React and preparation executes no installer;
+- staging/readiness never presents itself as installation; and
+- the eventual native activation path enforces the applicable platform trust policy before replacing an installed build.
 
 Record update qualification against the actual production public key and release metadata. Synthetic browser fixtures cannot satisfy this gate.
 
