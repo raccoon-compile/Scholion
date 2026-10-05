@@ -24,7 +24,7 @@ The completed trust chain and remaining release gates are explicit:
 - **#178** completed live review of the first-release faster-whisper `tiny`, `small`, and `medium` snapshots, including immutable revisions, licenses/model cards, complete file sets, sizes, hashes, and engine compatibility.
 - **#168** is complete: PR #207 bound those exact public inputs into installed/mounted Windows/macOS candidates and provenance; PR #209 qualifies the externally produced `release-2026-a` signature through the packaged native verifier, mutation/unknown-key rejection, update authorization, and exact staging.
 - **#173** is the next gate for Windows code signing and macOS open-source distribution trust/disclosure qualification; Apple Developer ID notarization is deferred rather than release-blocking.
-- **#174** follows platform signing for explicit user-authorized native activation of a trusted staged update.
+- **#174** may implement fail-closed activation readiness before #173 is complete, but production native handoff/execution remains gated on the applicable platform-distribution trust policy.
 - **#114** remains representative real-device qualification.
 - **#175** owns final production release publication, including checksums, provenance, SBOM, signatures, signed update metadata, and GitHub Release artifacts.
 
