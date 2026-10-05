@@ -15,12 +15,14 @@ export interface UpdateStatus {
   release_notes_url?: string;
   download_size_bytes?: number;
   message: string;
+  activation_state?: "ready_to_install";
 }
 
 export interface UpdateClient {
   status(): Promise<UpdateStatus>;
   check(): Promise<UpdateStatus>;
   stage(): Promise<UpdateStatus>;
+  prepareActivation(): Promise<UpdateStatus>;
 }
 
 const UPDATE_PROTOCOL_MESSAGES = {
@@ -30,7 +32,13 @@ const UPDATE_PROTOCOL_MESSAGES = {
 } as const;
 
 class TauriUpdateClient implements UpdateClient {
-  private request(method: "updates.status" | "updates.check" | "updates.stage") {
+  private request(
+    method:
+      | "updates.status"
+      | "updates.check"
+      | "updates.stage"
+      | "updates.prepare_activation",
+  ) {
     return invokeNativeProtocol<UpdateStatus>(
       "update_request",
       method,
@@ -49,6 +57,10 @@ class TauriUpdateClient implements UpdateClient {
 
   stage(): Promise<UpdateStatus> {
     return this.request("updates.stage");
+  }
+
+  prepareActivation(): Promise<UpdateStatus> {
+    return this.request("updates.prepare_activation");
   }
 }
 
@@ -109,6 +121,19 @@ class MockUpdateClient implements UpdateClient {
       throw new Error("Check for a trusted update before downloading it");
     }
     this.state = mockStatus("staged", { download_size_bytes: 48_234_496 });
+    return { ...this.state };
+  }
+
+  async prepareActivation(): Promise<UpdateStatus> {
+    await new Promise((resolve) => window.setTimeout(resolve, 60));
+    if (this.state.state !== "staged") {
+      throw new Error("A trusted staged update is required before installation preparation");
+    }
+    this.state = {
+      ...this.state,
+      activation_state: "ready_to_install",
+      message: "Scholion re-verified update 0.2.0 for native installation.",
+    };
     return { ...this.state };
   }
 }
