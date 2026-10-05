@@ -9,7 +9,7 @@ interface UpdatesWorkspaceProps {
   onThemeChange: (theme: Theme) => void;
 }
 
-type TransientState = "idle" | "checking" | "staging" | "failure";
+type TransientState = "idle" | "checking" | "staging" | "preparing" | "failure";
 
 function formatBytes(value: number | undefined): string | null {
   if (value === undefined) return null;
@@ -26,8 +26,10 @@ function formatBytes(value: number | undefined): string | null {
 function stateTitle(status: UpdateStatus | null, transient: TransientState): string {
   if (transient === "checking") return "Checking for updates";
   if (transient === "staging") return "Verifying update package";
+  if (transient === "preparing") return "Re-verifying staged update";
   if (transient === "failure") return "Update check could not finish";
   if (!status) return "Loading update state";
+  if (status.activation_state === "ready_to_install") return "Ready for installation handoff";
   switch (status.state) {
     case "off":
       return "Update checking is off";
@@ -96,7 +98,24 @@ export function UpdatesWorkspace({
     }
   }
 
-  const busy = transient === "checking" || transient === "staging";
+  async function prepareActivation() {
+    setTransient("preparing");
+    setError(null);
+    try {
+      setStatus(await updates.prepareActivation());
+      setTransient("idle");
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Scholion could not re-verify the staged update",
+      );
+      setTransient("failure");
+    }
+  }
+
+  const busy =
+    transient === "checking" || transient === "staging" || transient === "preparing";
   const size = formatBytes(status?.download_size_bytes);
 
   return (
@@ -117,7 +136,9 @@ export function UpdatesWorkspace({
               ? transient === "checking"
                 ? "Fetching a small signed release manifest and verifying it on this computer."
                 : "Downloading the signed release package and checking its exact size and SHA-256 before staging it."
-              : error ?? status?.message ?? "Reading local update state…"}
+              : transient === "preparing"
+                ? "Re-checking the signed release metadata and exact staged bytes before native installation handoff."
+                : error ?? status?.message ?? "Reading local update state…"}
           </p>
 
           {status && (
@@ -159,6 +180,19 @@ export function UpdatesWorkspace({
                 {transient === "staging" ? "Verifying…" : "Download and verify"}
               </button>
             )}
+            {status?.state === "staged" &&
+              status.activation_state !== "ready_to_install" && (
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => void prepareActivation()}
+                  disabled={busy}
+                >
+                  {transient === "preparing"
+                    ? "Re-verifying…"
+                    : "Prepare for installation"}
+                </button>
+              )}
           </div>
         </article>
 
@@ -186,9 +220,19 @@ export function UpdatesWorkspace({
 
       {status?.state === "staged" && transient === "idle" && (
         <div className="updates-boundary-note" role="note">
-          <strong>Installation is deliberately separate.</strong> This build has verified and
-          staged the package, but Scholion will not activate it until the native installer and
-          operating-system signing boundary is configured for a production release.
+          {status.activation_state === "ready_to_install" ? (
+            <>
+              <strong>Exact staged bytes re-verified.</strong> Scholion is ready for the native
+              installation handoff, but this build still will not execute an installer until the
+              applicable operating-system trust and activation boundary is enabled.
+            </>
+          ) : (
+            <>
+              <strong>Installation is deliberately separate.</strong> This build has verified and
+              staged the package. Prepare for installation re-verifies the exact signed metadata
+              and staged bytes, but does not execute anything.
+            </>
+          )}
         </div>
       )}
     </section>
