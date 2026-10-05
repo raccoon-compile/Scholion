@@ -72,9 +72,14 @@ def test_update_bridge_rejects_urls_paths_and_unknown_methods() -> None:
         _request("updates.install"),
         cast(Any, service),
     )
+    private_native = handle_request(
+        _request("updates.native_activation_ticket"),
+        cast(Any, service),
+    )
 
     assert with_url["ok"] is False
     assert unknown["ok"] is False
+    assert private_native["ok"] is False
     assert service.calls == []
 
 
