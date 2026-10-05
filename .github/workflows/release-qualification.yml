@@ -50,6 +50,7 @@ on:
       - "uv.lock"
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
