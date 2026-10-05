@@ -44,7 +44,7 @@ The browser Updates tests prove presentation and state-machine behavior only. A 
 - the staged filesystem path never crosses into React and preparation executes no installer;
 - staging/readiness/handoff never presents itself as completed installation;
 - **Continue installation** carries no caller path or installer arguments;
-- on macOS, the exact verified DMG is handed to the OS without disabling or bypassing Gatekeeper;
+- on macOS, the exact verified DMG receives a quarantine marker that is read back successfully before OS handoff; Gatekeeper is never disabled or bypassed;
 - on Windows, activation remains blocked unless the required publisher trust can be verified; and
 - replacement/restart/recovery behavior is qualified on representative devices before release.
 
