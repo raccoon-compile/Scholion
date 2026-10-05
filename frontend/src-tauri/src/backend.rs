@@ -356,8 +356,7 @@ mod tests {
 
     #[test]
     fn private_update_activation_receives_only_configured_native_verifier() {
-        let command =
-            runtime(Some("trusted-native")).command(RuntimeMode::UpdateActivationBridge);
+        let command = runtime(Some("trusted-native")).command(RuntimeMode::UpdateActivationBridge);
         let verifier = command
             .get_envs()
             .find(|(name, _)| *name == OsStr::new(NATIVE_UPDATE_VERIFIER_ENV))
