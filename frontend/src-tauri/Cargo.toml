@@ -6,7 +6,7 @@ edition = "2021"
 license = "AGPL-3.0-only"
 
 [build-dependencies]
-tauri-build = { version = "=2.6.3", features = [] }
+tauri-build = { version = "=2.7.0", features = [] }
 
 [dependencies]
 ed25519-dalek = { version = "=3.0.0", default-features = false }
