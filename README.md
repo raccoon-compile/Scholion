@@ -103,7 +103,7 @@ Updates follow a similarly narrow boundary. React can request only status, check
 
 In-app guidance is deliberately re-openable and non-hover-only where popovers are used. It explains contracts where users encounter them but carries no filesystem/database/process authority and does not recreate application policy in React. See **[In-app guidance](docs/in-app-guidance.md)**.
 
-There are still no public signed installers or Releases. Source builds remain the supported user path. Hosted release engineering now constructs and qualifies exact unsigned Windows/macOS preview artifacts with managed runtime, deterministic provenance/lifecycle evidence, and repository-owned packaged FFmpeg/FFprobe, but those CI artifacts are not yet production-signed distributions or representative-device evidence.
+Scholion does not yet have a production release. Source builds remain the supported user path. The repository can construct and qualify exact unsigned Windows NSIS/macOS DMG candidates with managed runtime, deterministic provenance/lifecycle evidence, and repository-owned packaged FFmpeg/FFprobe. A maintainer may publish those exact qualified bytes as a GitHub **signing-candidate prerelease** for external signing/onboarding and publication-path testing, but such a prerelease remains explicitly non-production: Windows publisher signing, representative-device evidence, trusted native update activation, and final release publication gates are still outstanding.
 
 ## Themes and accessibility
 
