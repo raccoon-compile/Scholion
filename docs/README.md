@@ -8,6 +8,8 @@ You do **not** need to understand CUDA, DuckDB, SQLite, BM25, model revisions, s
 
 > **The short version:** your recording stays yours, canonical JSON remains inspectable evidence, your notes/speaker names/saved searches remain your knowledge, and most machinery built around those things can be thrown away and rebuilt.
 
+For the project-wide user-data and network-activity contract, see **[Privacy Policy](../PRIVACY.md)**.
+
 ## What can Scholion do today?
 
 | You want to… | Scholion currently… |
