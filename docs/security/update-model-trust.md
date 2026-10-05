@@ -126,7 +126,7 @@ This protects against network/hosting rollback. It is not a defense against a sa
 - fsync before activation into staged custody; and
 - atomic local replacement of the staged file.
 
-A staged package is **not installed**. Scholion can re-verify the cached signed manifest and exact staged size/SHA-256 immediately before native handoff without exposing the staged path to React or executing anything. Native platform activation remains a separate trust boundary because Windows/macOS/Linux packaging, applicable platform trust policy, rollback behavior, and process replacement are platform responsibilities. The UI says this explicitly instead of presenting staging or readiness as installation.
+A staged package is **not installed**. Scholion re-verifies the cached signed manifest and exact staged size/SHA-256 immediately before native handoff. A separate private bridge returns the path-bearing activation ticket only to Rust, never to React. macOS can hand the exact verified DMG to the operating system without weakening Gatekeeper. Windows activation remains fail-closed until the required publisher trust can be verified. Process replacement, approval, restart, and recovery remain platform responsibilities. The UI says this explicitly instead of presenting staging or readiness as installation.
 
 ## Release metadata generation
 
@@ -215,7 +215,9 @@ The Updates screen distinguishes:
 4. **Up to date**: trusted metadata contains no newer stable release.
 5. **Trusted update available**: a newer signed stable release for this platform is authorized.
 6. **Staging/Staged**: exact signed package bytes are being downloaded/verified or have been staged.
-7. **Failure**: network/trust/platform failure is presented as one bounded public error without private diagnostics.
+7. **Ready for installation handoff**: signed metadata and exact staged bytes were re-verified immediately before native handoff.
+8. **Installation handoff started**: the operating system received the exact verified candidate; Scholion does not yet claim installation completed.
+9. **Failure**: network/trust/platform failure is presented as one bounded public error without private diagnostics.
 
 The UI states that GitHub/CDN can observe ordinary connection metadata such as IP address and request time. It also states what is **not** sent: installation ID, recordings, transcript/research content, hardware inventory, model inventory, and behavioral telemetry.
 
