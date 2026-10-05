@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+#[cfg(any(target_os = "macos", target_os = "windows"))]
+use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use std::process::{Command, Stdio};
 use tauri::State;
