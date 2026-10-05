@@ -17,6 +17,7 @@ from scholion.desktop import (
     playback_bridge,
     processing_worker,
     transcript_tools_bridge,
+    update_activation_bridge,
     update_bridge,
 )
 from scholion.media.tools import media_tool_identity
@@ -72,6 +73,7 @@ _HANDLERS: dict[str, Callable[[], int]] = {
     "runtime-info": _runtime_info,
     "transcript-tools": transcript_tools_bridge.main,
     "update": update_bridge.main,
+    "update-activation": update_activation_bridge.main,
 }
 
 
