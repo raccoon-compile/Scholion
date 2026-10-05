@@ -322,11 +322,7 @@ def test_prepare_activation_reverifies_manifest_and_exact_staged_bytes(
     channel.stage(now=_NOW)
 
     staged_path = (
-        tmp_path
-        / "cache"
-        / "updates"
-        / "staged"
-        / "release-11-windows-x86_64.bin"
+        tmp_path / "cache" / "updates" / "staged" / "release-11-windows-x86_64.bin"
     )
     staged_path.parent.mkdir(parents=True, exist_ok=True)
     staged_path.write_bytes(artifact_bytes)
@@ -364,11 +360,7 @@ def test_prepare_activation_fails_closed_for_missing_or_mutated_stage(
     channel.check(now=_NOW)
     channel.stage(now=_NOW)
     staged_path = (
-        tmp_path
-        / "cache"
-        / "updates"
-        / "staged"
-        / "release-12-windows-x86_64.bin"
+        tmp_path / "cache" / "updates" / "staged" / "release-12-windows-x86_64.bin"
     )
 
     with pytest.raises(UpdateChannelError, match="missing"):
@@ -394,11 +386,7 @@ def test_prepare_activation_rejects_expired_cached_manifest(tmp_path: Path) -> N
     channel.stage(now=_NOW)
 
     staged_path = (
-        tmp_path
-        / "cache"
-        / "updates"
-        / "staged"
-        / "release-13-windows-x86_64.bin"
+        tmp_path / "cache" / "updates" / "staged" / "release-13-windows-x86_64.bin"
     )
     staged_path.parent.mkdir(parents=True, exist_ok=True)
     staged_path.write_bytes(artifact_bytes)
