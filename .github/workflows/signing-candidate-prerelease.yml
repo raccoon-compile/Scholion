@@ -68,6 +68,7 @@ jobs:
     needs: validate
     uses: ./.github/workflows/release-qualification.yml
     permissions:
+      actions: read
       contents: read
 
   publish:
