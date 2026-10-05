@@ -29,6 +29,9 @@ class _Service:
     def stage(self) -> dict[str, object]:
         return self._result("stage")
 
+    def prepare_activation(self) -> dict[str, object]:
+        return self._result("prepare_activation")
+
 
 def _request(
     method: str, *, params: dict[str, object] | None = None
@@ -47,11 +50,15 @@ def test_update_bridge_exposes_only_closed_no_param_methods() -> None:
     status = handle_request(_request("updates.status"), cast(Any, service))
     check = handle_request(_request("updates.check"), cast(Any, service))
     stage = handle_request(_request("updates.stage"), cast(Any, service))
+    prepared = handle_request(
+        _request("updates.prepare_activation"), cast(Any, service)
+    )
 
     assert status["ok"] is True
     assert check["ok"] is True
     assert stage["ok"] is True
-    assert service.calls == ["status", "check", "stage"]
+    assert prepared["ok"] is True
+    assert service.calls == ["status", "check", "stage", "prepare_activation"]
 
 
 def test_update_bridge_rejects_urls_paths_and_unknown_methods() -> None:
