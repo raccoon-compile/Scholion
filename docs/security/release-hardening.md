@@ -54,7 +54,7 @@ See **[Production trust inputs](production-trust-inputs.md)** and **[Release-key
 
 The user-facing copy states the network truth plainly: GitHub/CDN still sees ordinary connection metadata such as IP address and request time. A failed/offline update check never blocks the local evidence workspace.
 
-**Production gate still required:** #173 Windows signing and macOS open-source trust qualification plus the remaining #174 platform-specific completion/recovery qualification. macOS native handoff is implemented; Windows execution remains intentionally blocked until publisher trust can be verified. A staged or pre-handoff-reverified package is not called installed or executable merely because Scholion downloaded and rechecked it successfully.
+**Production gate still required:** #173 Windows signing and macOS open-source trust qualification plus the remaining #174 platform-specific completion/recovery qualification. macOS native handoff is implemented with explicit quarantine application/readback before open; Windows execution remains intentionally blocked until publisher trust can be verified. A staged or pre-handoff-reverified package is not called installed or executable merely because Scholion downloaded and rechecked it successfully.
 
 ### Curated model trust root
 
