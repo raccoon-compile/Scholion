@@ -16,7 +16,9 @@ from urllib.request import Request, urlopen
 
 from scholion.core.file_manager_facade import FileManagerFacade
 from scholion.supply_chain.update_manifest import (
+    ReleaseArtifact,
     SignatureVerifier,
+    UpdateManifestPayload,
     UpdateTrustError,
     verify_signed_update_manifest,
 )
@@ -34,6 +36,41 @@ _SEMVER = re.compile(
 
 class UpdateChannelError(ValueError):
     """Raised when the application update channel must fail closed."""
+
+
+@dataclass(frozen=True, slots=True)
+class _ActivationCandidate:
+    path: Path
+    payload: UpdateManifestPayload
+    artifact: ReleaseArtifact
+
+
+def _artifact_suffix(url: str) -> str:
+    suffix = Path(urlparse(url).path).suffix.lower()
+    if suffix not in {".bin", ".dmg", ".exe"}:
+        raise UpdateChannelError("Trusted update artifact type is unsupported")
+    return suffix
+
+
+def _staged_artifact_path(
+    cache_dir: Path,
+    *,
+    sequence: int,
+    platform_id: str,
+    artifact_url: str,
+) -> Path:
+    suffix = _artifact_suffix(artifact_url)
+    return (
+        cache_dir / "updates" / "staged" / f"release-{sequence}-{platform_id}{suffix}"
+    )
+
+
+def _required_activation_suffix(platform_id: str) -> str:
+    if platform_id.startswith("windows-"):
+        return ".exe"
+    if platform_id.startswith("macos-"):
+        return ".dmg"
+    raise UpdateChannelError("This platform does not support native update activation")
 
 
 class UpdateTransport(Protocol):
@@ -499,8 +536,12 @@ class UpdateChannelService:
         if not _is_newer(payload.version, self.current_version):
             raise UpdateChannelError("The trusted release is not newer than this build")
 
-        staging_dir = self.cache_dir / "updates" / "staged"
-        destination = staging_dir / f"release-{payload.sequence}-{self.platform_id}.bin"
+        destination = _staged_artifact_path(
+            self.cache_dir,
+            sequence=payload.sequence,
+            platform_id=self.platform_id,
+            artifact_url=artifact.url,
+        )
         self.transport.stage_verified_artifact(
             artifact.url,
             destination=destination,
@@ -523,14 +564,13 @@ class UpdateChannelService:
             "message": self._message("staged", payload.version),
         }
 
-    def prepare_activation(self, *, now: datetime | None = None) -> dict[str, object]:
-        """Re-verify staged release authority immediately before native handoff.
-
-        This method deliberately does not execute an installer or expose the staged path.
-        The native host owns the eventual platform-specific activation boundary.
-        """
+    def _activation_candidate(
+        self, *, now: datetime | None = None
+    ) -> _ActivationCandidate:
         if self.verifier is None:
-            return self.status()
+            raise UpdateChannelError(
+                "This build does not contain production update verification material"
+            )
         state = self.state_store.load()
         if (
             state.last_status != "staged"
@@ -557,11 +597,11 @@ class UpdateChannelService:
         if not _is_newer(payload.version, self.current_version):
             raise UpdateChannelError("The trusted release is not newer than this build")
 
-        destination = (
-            self.cache_dir
-            / "updates"
-            / "staged"
-            / f"release-{payload.sequence}-{self.platform_id}.bin"
+        destination = _staged_artifact_path(
+            self.cache_dir,
+            sequence=payload.sequence,
+            platform_id=self.platform_id,
+            artifact_url=artifact.url,
         )
         observed_size, observed_sha256 = _measure_staged_artifact(
             destination,
@@ -575,16 +615,60 @@ class UpdateChannelService:
                 "The staged update package no longer matches signed metadata"
             )
 
+        return _ActivationCandidate(
+            path=destination,
+            payload=payload,
+            artifact=artifact,
+        )
+
+    def prepare_activation(self, *, now: datetime | None = None) -> dict[str, object]:
+        """Re-verify staged release authority immediately before native handoff.
+
+        This public result deliberately does not expose the staged path. The native host
+        owns the eventual platform-specific activation boundary.
+        """
+        if self.verifier is None:
+            return self.status()
+        candidate = self._activation_candidate(now=now)
         return {
             "enabled": True,
             "state": "staged",
             "activation_state": "ready_to_install",
             "current_version": self.current_version,
-            "available_version": payload.version,
-            "download_size_bytes": artifact.size_bytes,
+            "available_version": candidate.payload.version,
+            "download_size_bytes": candidate.artifact.size_bytes,
             "message": (
-                f"Scholion re-verified update {payload.version} for native installation."
+                f"Scholion re-verified update {candidate.payload.version} "
+                "for native installation."
             ),
+        }
+
+    def native_activation_ticket(
+        self, *, now: datetime | None = None
+    ) -> dict[str, object]:
+        """Return one path-bearing ticket for the private Rust activation boundary."""
+        candidate = self._activation_candidate(now=now)
+        expected_suffix = _required_activation_suffix(self.platform_id)
+        if candidate.path.suffix.lower() != expected_suffix:
+            raise UpdateChannelError(
+                "The staged update is not an installable package for this platform"
+            )
+        resolved = candidate.path.resolve(strict=True)
+        staging_root = (self.cache_dir / "updates" / "staged").resolve(strict=True)
+        try:
+            resolved.relative_to(staging_root)
+        except ValueError as exc:
+            raise UpdateChannelError(
+                "The staged update escaped private update custody"
+            ) from exc
+        return {
+            "schema_version": 1,
+            "platform": self.platform_id,
+            "version": candidate.payload.version,
+            "sequence": candidate.payload.sequence,
+            "size_bytes": candidate.artifact.size_bytes,
+            "sha256": candidate.artifact.sha256_hex,
+            "staged_path": str(resolved),
         }
 
     def _require_expected_channel(self, channel: str) -> None:

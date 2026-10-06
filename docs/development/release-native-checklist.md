@@ -42,8 +42,11 @@ The browser Updates tests prove presentation and state-machine behavior only. A 
 - **Prepare for installation** re-verifies the cached signed metadata and exact staged bytes immediately before native handoff;
 - missing, expired, mutated, oversized, or hash-mismatching staged state fails closed at preparation time;
 - the staged filesystem path never crosses into React and preparation executes no installer;
-- staging/readiness never presents itself as installation; and
-- the eventual native activation path enforces the applicable platform trust policy before replacing an installed build.
+- staging/readiness/handoff never presents itself as completed installation;
+- **Continue installation** carries no caller path or installer arguments;
+- on macOS, the exact verified DMG receives a quarantine marker that is read back successfully before OS handoff; Gatekeeper is never disabled or bypassed;
+- on Windows, activation remains blocked unless the required publisher trust can be verified; and
+- replacement/restart/recovery behavior is qualified on representative devices before release.
 
 Record update qualification against the actual production public key and release metadata. Synthetic browser fixtures cannot satisfy this gate.
 

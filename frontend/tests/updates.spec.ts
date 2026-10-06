@@ -58,7 +58,17 @@ test("trusted staged update can be reverified for native handoff without claimin
     page.getByRole("heading", { name: "Ready for installation handoff" }),
   ).toBeVisible();
   await expect(page.getByText(/Exact staged bytes re-verified/)).toBeVisible();
-  await expect(page.getByRole("button", { name: /^Install/ })).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Continue installation" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Handing update to the operating system" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Handing off…" })).toBeDisabled();
+  await expect(
+    page.getByRole("heading", { name: "Installation handoff started" }),
+  ).toBeVisible();
+  await expect(page.getByText(/has not declared the update installed/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue installation" })).toHaveCount(0);
 });
 
 test("source build without production update key remains offline and explicit", async ({ page }) => {
@@ -76,7 +86,7 @@ test("update failure is bounded and does not expose implementation details", asy
 
   await page.getByRole("button", { name: "Check for updates" }).click();
   await expect(
-    page.getByRole("heading", { name: "Update check could not finish" }),
+    page.getByRole("heading", { name: "Update action could not finish" }),
   ).toBeVisible();
   await expect(page.getByRole("status")).toContainText(
     "Scholion could not complete the trusted update request",

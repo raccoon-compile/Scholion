@@ -101,6 +101,7 @@ def _payload(
     channel: str = "stable",
     artifact_size: int = 42,
     artifact_sha256: str = "a" * 64,
+    artifact_url: str = "https://github.com/raccoon-compile/Scholion/releases/download/v0.2.0/app.bin",
 ) -> bytes:
     document = {
         "schema_version": 1,
@@ -113,7 +114,7 @@ def _payload(
         "artifacts": [
             {
                 "platform": platform_id,
-                "url": "https://github.com/raccoon-compile/Scholion/releases/download/v0.2.0/app.bin",
+                "url": artifact_url,
                 "size_bytes": artifact_size,
                 "sha256": artifact_sha256,
             }
@@ -393,6 +394,64 @@ def test_prepare_activation_rejects_expired_cached_manifest(tmp_path: Path) -> N
 
     with pytest.raises(UpdateChannelError, match="no longer trusted"):
         channel.prepare_activation(now=_NOW + timedelta(days=8))
+
+
+def test_native_activation_ticket_requires_real_platform_package_suffix(
+    tmp_path: Path,
+) -> None:
+    artifact_bytes = b"windows installer"
+    digest = sha256(artifact_bytes).hexdigest()
+    payload = _payload(
+        sequence=14,
+        version="0.7.0",
+        artifact_size=len(artifact_bytes),
+        artifact_sha256=digest,
+        artifact_url="https://github.com/raccoon-compile/Scholion/releases/download/v0.7.0/Scholion-setup.exe",
+    )
+    channel, _, _, _ = _service(tmp_path, payload)
+    channel.check(now=_NOW)
+    channel.stage(now=_NOW)
+    staged_path = (
+        tmp_path / "cache" / "updates" / "staged" / "release-14-windows-x86_64.exe"
+    )
+    staged_path.parent.mkdir(parents=True, exist_ok=True)
+    staged_path.write_bytes(artifact_bytes)
+
+    ticket = channel.native_activation_ticket(now=_NOW)
+
+    assert ticket == {
+        "schema_version": 1,
+        "platform": "windows-x86_64",
+        "version": "0.7.0",
+        "sequence": 14,
+        "size_bytes": len(artifact_bytes),
+        "sha256": digest,
+        "staged_path": str(staged_path.resolve()),
+    }
+
+
+def test_native_activation_ticket_rejects_inert_qualification_artifact(
+    tmp_path: Path,
+) -> None:
+    artifact_bytes = b"qualification marker"
+    digest = sha256(artifact_bytes).hexdigest()
+    payload = _payload(
+        sequence=15,
+        version="0.8.0",
+        artifact_size=len(artifact_bytes),
+        artifact_sha256=digest,
+    )
+    channel, _, _, _ = _service(tmp_path, payload)
+    channel.check(now=_NOW)
+    channel.stage(now=_NOW)
+    staged_path = (
+        tmp_path / "cache" / "updates" / "staged" / "release-15-windows-x86_64.bin"
+    )
+    staged_path.parent.mkdir(parents=True, exist_ok=True)
+    staged_path.write_bytes(artifact_bytes)
+
+    with pytest.raises(UpdateChannelError, match="installable package"):
+        channel.native_activation_ticket(now=_NOW)
 
 
 def test_state_store_fails_closed_on_malformed_or_partial_state(tmp_path: Path) -> None:

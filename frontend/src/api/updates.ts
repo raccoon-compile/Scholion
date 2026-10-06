@@ -1,4 +1,4 @@
-import { invokeNativeProtocol } from "./nativeProtocol";
+import { invokeNativeProtocol, nativeInvokeErrorMessage } from "./nativeProtocol";
 
 export type UpdatePersistentState =
   | "off"
@@ -18,11 +18,18 @@ export interface UpdateStatus {
   activation_state?: "ready_to_install";
 }
 
+export interface UpdateActivationResult {
+  activation_state: "handoff_started";
+  version: string;
+  message: string;
+}
+
 export interface UpdateClient {
   status(): Promise<UpdateStatus>;
   check(): Promise<UpdateStatus>;
   stage(): Promise<UpdateStatus>;
   prepareActivation(): Promise<UpdateStatus>;
+  activate(): Promise<UpdateActivationResult>;
 }
 
 const UPDATE_PROTOCOL_MESSAGES = {
@@ -61,6 +68,21 @@ class TauriUpdateClient implements UpdateClient {
 
   prepareActivation(): Promise<UpdateStatus> {
     return this.request("updates.prepare_activation");
+  }
+
+  async activate(): Promise<UpdateActivationResult> {
+    const { invoke } = await import("@tauri-apps/api/core");
+    try {
+      return await invoke<UpdateActivationResult>("update_activate");
+    } catch (caught) {
+      throw new Error(
+        nativeInvokeErrorMessage(
+          caught,
+          "Scholion could not hand the verified update to the operating system",
+        ),
+        { cause: caught },
+      );
+    }
   }
 }
 
@@ -135,6 +157,19 @@ class MockUpdateClient implements UpdateClient {
       message: "Scholion re-verified update 0.2.0 for native installation.",
     };
     return { ...this.state };
+  }
+
+  async activate(): Promise<UpdateActivationResult> {
+    await new Promise((resolve) => window.setTimeout(resolve, 60));
+    if (this.state.activation_state !== "ready_to_install") {
+      throw new Error("Prepare the trusted update before installation handoff");
+    }
+    return {
+      activation_state: "handoff_started",
+      version: "0.2.0",
+      message:
+        "The operating system received the exact verified Scholion update for installation.",
+    };
   }
 }
 

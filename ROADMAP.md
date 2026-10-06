@@ -10,7 +10,7 @@ Issue #145 is complete. PR #164 established the Windows/macOS packaging foundati
 
 [Diagram source (Mermaid)](./docs/diagrams/src/scholion-roadmap.mmd)
 
-Text fallback: Scholion already spans local media, reliable transcription, canonical evidence, private retrieval, verified navigation, durable research, native desktop workflows, lifecycle/playback, real-model-qualified anonymous diarization, signed update/model-trust mechanics, hosted cross-platform real-media acceptance, completed pre-packaging readiness, exact Windows/macOS preview-package qualification, deterministic release provenance, evidence-safe Windows package lifecycle, repository-owned packaged FFmpeg/FFprobe, strict native Ed25519 verification, deterministic production trust-input custody, production model-policy qualification, and real production-key signed update verification/staging. The next tranche is Windows signing plus macOS open-source trust qualification, followed by native update activation and representative physical-device qualification. Official Linux binary distribution remains separately blocked by issue #135.
+Text fallback: Scholion already spans local media, reliable transcription, canonical evidence, private retrieval, verified navigation, durable research, native desktop workflows, lifecycle/playback, real-model-qualified anonymous diarization, signed update/model-trust mechanics, hosted cross-platform real-media acceptance, completed pre-packaging readiness, exact Windows/macOS preview-package qualification, deterministic release provenance, evidence-safe Windows package lifecycle, repository-owned packaged FFmpeg/FFprobe, strict native Ed25519 verification, deterministic production trust-input custody, production model-policy qualification, and real production-key signed update verification/staging. The remaining release work is Windows signing plus macOS open-source trust qualification, completion of native update activation/recovery behavior, and representative physical-device qualification. Official Linux binary distribution remains separately blocked by issue #135.
 
 # MVP foundation now
 
@@ -87,7 +87,7 @@ The desktop now also has an explicit **Updates** workspace. Manual checks use on
 | Themes/accessibility | semantic palette + browser/native controls | 8 skins qualified | representative OS/forced-colors checks |
 | Architecture/redundancy | capability-blind transport + app-layer composition + one Research contract | re-audited after #144 | no known duplicate authority remains in current milestone |
 | Frontend tests | strict TS/build + Playwright/axe | primary surfaces including Updates covered | grow with features, avoid duplicated backend policy |
-| Update trust | exact-byte signed manifest + strict native Ed25519 verifier + deterministic public-input custody + fixed endpoint + rollback/expiry/equivocation + staging + UI | implemented mechanics | #177 real production key/public catalog + #168 production-shaped qualification; #174 later activation |
+| Update trust | exact-byte signed manifest + strict native Ed25519 verifier + deterministic public-input custody + fixed endpoint + rollback/expiry/equivocation + staging + pre-handoff verification + bounded native handoff | implemented mechanics | macOS handoff implemented; Windows activation remains gated on #173 publisher trust; #174 recovery/device qualification remains |
 | Packaging | managed frozen runtime + Tauri + repository-owned FFmpeg/FFprobe + deterministic trust-input overlay | Windows/macOS unsigned preview foundation, lifecycle/provenance, media custody, native verifier, and trust-input custody complete through #172/#180 | real update/model trust inputs, platform trust qualification, native activation, final release evidence; Linux public package blocked by #135 |
 | Backup/restore | authority boundaries known | not implemented | **post-MVP** portability/data-safety feature |
 | Representative hardware | platform CI + policy contracts | partial | real devices; #114 owns current task-transport evidence |
@@ -117,7 +117,7 @@ Merged PR #144 completed the application-side trust mechanics:
 
 PR #170 then completed the native verifier plumbing with exact-pinned `ed25519-dalek` 3.0.0, strict verification, a fixed bounded native verification protocol, and packaged-only verifier activation. PR #172 added deterministic public trust-input custody and package overlay/verification, and PR #180 added public-key catalog construction plus the external ceremony runbook. None of those changes put a private signing key in the repository or substitute synthetic material for the real #177 ceremony.
 
-A staged update is deliberately **not** called installed. Pre-handoff readiness now re-verifies the cached signed metadata and exact staged bytes, but native execution plus the applicable OS platform-trust qualification remains a later boundary.
+A staged update is deliberately **not** called installed. Pre-handoff readiness re-verifies the cached signed metadata and exact staged bytes. A private Rust-owned handoff now applies/verifies macOS quarantine metadata and opens only the exact verified DMG; Windows activation remains fail-closed until its publisher trust can be verified.
 
 ## 3. Pre-packaging release readiness complete (#145)
 

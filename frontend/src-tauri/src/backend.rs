@@ -23,6 +23,7 @@ pub(crate) enum RuntimeMode {
     PlaybackBridge,
     ProcessingWorker,
     TranscriptToolsBridge,
+    UpdateActivationBridge,
     UpdateBridge,
 }
 
@@ -34,6 +35,7 @@ impl RuntimeMode {
             Self::PlaybackBridge => "playback",
             Self::ProcessingWorker => "processing-worker",
             Self::TranscriptToolsBridge => "transcript-tools",
+            Self::UpdateActivationBridge => "update-activation",
             Self::UpdateBridge => "update",
         }
     }
@@ -45,6 +47,7 @@ impl RuntimeMode {
             Self::PlaybackBridge => "scholion.desktop.playback_bridge",
             Self::ProcessingWorker => "scholion.desktop.processing_worker",
             Self::TranscriptToolsBridge => "scholion.desktop.transcript_tools_bridge",
+            Self::UpdateActivationBridge => "scholion.desktop.update_activation_bridge",
             Self::UpdateBridge => "scholion.desktop.update_bridge",
         }
     }
@@ -150,7 +153,10 @@ impl DesktopRuntime {
             }
         }
         command.env_remove(NATIVE_UPDATE_VERIFIER_ENV);
-        if let RuntimeMode::UpdateBridge = mode {
+        if matches!(
+            mode,
+            RuntimeMode::UpdateBridge | RuntimeMode::UpdateActivationBridge
+        ) {
             if let Some(verifier) = &self.native_update_verifier {
                 command.env(NATIVE_UPDATE_VERIFIER_ENV, verifier);
             }
@@ -301,6 +307,22 @@ pub async fn lifecycle_request(
     request_mode(RuntimeMode::CustodyBridge, request, runtime.inner().clone()).await
 }
 
+pub(crate) async fn native_update_activation_ticket(
+    runtime: DesktopRuntime,
+) -> Result<Value, String> {
+    request_mode(
+        RuntimeMode::UpdateActivationBridge,
+        serde_json::json!({
+            "protocol_version": 1,
+            "request_id": "native-update-activation",
+            "method": "updates.native_activation_ticket",
+            "params": {},
+        }),
+        runtime,
+    )
+    .await
+}
+
 #[tauri::command]
 pub async fn update_request(
     request: Value,
@@ -330,6 +352,20 @@ mod tests {
             .find(|(name, _)| *name == OsStr::new(NATIVE_UPDATE_VERIFIER_ENV))
             .and_then(|(_, value)| value);
         assert_eq!(verifier, Some(OsStr::new("trusted-native")));
+    }
+
+    #[test]
+    fn private_update_activation_receives_only_configured_native_verifier() {
+        let command = runtime(Some("trusted-native")).command(RuntimeMode::UpdateActivationBridge);
+        let verifier = command
+            .get_envs()
+            .find(|(name, _)| *name == OsStr::new(NATIVE_UPDATE_VERIFIER_ENV))
+            .and_then(|(_, value)| value);
+        assert_eq!(verifier, Some(OsStr::new("trusted-native")));
+        assert_eq!(
+            command.get_args().collect::<Vec<_>>(),
+            vec![OsStr::new("update-activation")]
+        );
     }
 
     #[test]
