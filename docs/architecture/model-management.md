@@ -148,9 +148,11 @@ enables the stricter transaction automatically:
 With policy enforcement active, a missing catalog entry or a managed snapshot without
 current policy evidence cannot be admitted to a **new transcription**.
 
-This mechanism does not manufacture the production policy. The real faster-whisper
-entries still require deliberate upstream review and must ship as part of a signed
-Scholion release.
+This mechanism does not manufacture production policy. Scholion's reviewed first-release
+policy now pins immutable `tiny`, `small`, and `medium` faster-whisper snapshots in
+`packaging/release-trust/model-trust.json`, with complete file-set/size/SHA-256 evidence.
+Changing those entries remains a security-sensitive review decision and ships only as part
+of a signed Scholion release.
 
 ## Upgrading from a locally revalidated model to policy enforcement
 
