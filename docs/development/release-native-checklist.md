@@ -65,13 +65,16 @@ Do not populate the production catalog from whichever development snapshot happe
 
 ## Representative machines
 
-Minimum evidence set:
+The Windows/macOS MVP does **not** require a five-machine benchmark zoo. Record the smallest real-device evidence set that proves the distinct release boundaries:
 
-- Windows 8 GB CPU-only;
-- Windows or Linux 16 GB commodity system;
-- Apple Silicon macOS;
-- NVIDIA dGPU laptop/workstation;
-- 32/64 GB high-end workstation.
+- one genuinely CPU-only class for #114 Processing task-transport qualification;
+- one supported-accelerator class for #114 Processing task-transport qualification;
+- Apple Silicon macOS for #173/#174 Gatekeeper, first-launch, update-handoff, replacement, and recovery behavior; and
+- a real Windows system for #173/#174 signed-installer/update behavior once the production publisher-signing path exists.
+
+These are evidence classes, not necessarily four different computers. One machine may satisfy more than one applicable row when it genuinely has the relevant hardware/platform characteristics. Do not manufacture CPU-only evidence merely by disabling a supported accelerator if the purpose of the check is resource discovery/admission.
+
+Linux Wayland/X11 qualification becomes a release requirement only when #135 is unblocked for an official Linux binary. A 32/64 GB high-end workstation remains useful post-MVP performance/calibration evidence, not a first-release gate.
 
 Hardware policy must remain conservative on small devices and must not artificially disable feasible acceleration on capable devices.
 
@@ -80,9 +83,10 @@ Hardware policy must remain conservative on small devices and must not artificia
 | Class | Current evidence | Status |
 |---|---|---|
 | CPU-only representative machine | Hosted CI exercises CPU code paths, but no representative real-device #114 task-transport qualification has been recorded | **Pending** |
-| Accelerator-capable Linux source build | Development dogfooding proved real native readiness, model inventory/download, Tauri → Rust → Python transport, and accelerator discovery before the complete task-feedback/trust tranches landed | **Partial; rerun current main** |
-| Apple Silicon | Platform smoke exists, representative native desktop/task/update qualification not yet recorded | **Pending** |
-| Windows 8/16 GB | Platform smoke exists, representative native desktop/task/update qualification not yet recorded | **Pending** |
+| Supported-accelerator representative machine | Earlier development dogfooding proved accelerator discovery before the complete task-feedback/trust tranches landed | **Partial; rerun current main** |
+| Apple Silicon macOS | Platform smoke exists, representative native desktop/task/update/Gatekeeper qualification not yet recorded | **Pending** |
+| Windows release device | Platform smoke and unsigned package lifecycle qualification exist; signed installer/update behavior awaits #173 publisher trust and representative-device evidence | **Pending** |
+| Linux Wayland/X11 | Source/development qualification remains useful, but official Linux release evidence is deferred while #135 is open | **Deferred from Windows/macOS MVP** |
 
 Do not upgrade a `Partial` row to qualified based only on browser mocks or hosted CI. Record the date/version, operating-system class, CPU/RAM class, accelerator class (if any), exercised flows, and pass/fail result without publishing local usernames, hostnames, home-directory paths, recording names, or copied private logs.
 
@@ -116,6 +120,6 @@ Also qualify a pull in which one or more lockfiles changed. The contributor work
 
 Before public distribution, execute the acceptance criteria in [Pre-release security hardening](../security/release-hardening.md) for signed manifests, update/model trust, platform signing, and hostile-input/process containment.
 
-The repository now implements fixed-endpoint manual update orchestration, private anti-rollback state, exact signed artifact staging, explicit update UI states, model-policy integration, and deterministic release/model trust metadata generation. Production enablement still requires the reviewed native Ed25519 verifier/public key, real curated faster-whisper entries, platform signing/notarization plus activation, and the representative native evidence above. This checklist must not turn those release inputs into implied completion.
+The repository now implements fixed-endpoint manual update orchestration, private anti-rollback state, exact signed artifact staging and pre-handoff re-verification, bounded native activation, the reviewed production Ed25519 public verification catalog, the reviewed tiny/small/medium faster-whisper policy, and deterministic release/model trust metadata generation. Production enablement still requires Windows publisher signing, the representative native evidence above, completion of the remaining platform-specific activation/recovery qualification, and final #175 publication evidence. Linux binary release remains separately blocked by #135. This checklist must not turn hosted CI or synthetic fixtures into implied representative-device completion.
 
 Application-layer encryption/keychain work follows its documented threat model and recovery contract rather than being inferred from this checklist.
