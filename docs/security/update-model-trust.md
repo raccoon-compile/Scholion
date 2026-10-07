@@ -241,15 +241,17 @@ Local recordings, transcripts, models, and research remain usable when update ch
 
 ## Implemented versus production-provisioned
 
-Repository mechanics now cover the update/model trust architecture, local update state, fixed transport, staging/hash verification, UI states, deterministic release/model metadata generation, and extensive synthetic trust tests.
+Repository mechanics now cover the update/model trust architecture, local update state, fixed transport, exact staging/hash verification, pre-handoff re-verification, bounded native activation, UI states, deterministic release/model metadata generation, and extensive trust tests.
 
-Issue #145 completed the **pre-packaging** decisions/cleanup. Once that milestone is complete, packaging still must provide:
+The pre-packaging and production-input milestones are complete: Scholion exact-pins and audits the native Rust Ed25519 verifier, packages the approved production public-key catalog, and ships a deliberately reviewed first-release `tiny` / `small` / `medium` faster-whisper policy with immutable revision and complete file-set/size/SHA-256 evidence. Production-shaped Windows/macOS candidates have qualified those public trust inputs and the real production-key-signed update fixture without exposing the private signer.
 
-- the exact-pinned reviewed Rust verifier dependency and generated/audited lockfile;
-- the approved production public-key/key-rotation resource, never the private signer;
-- deliberately reviewed real faster-whisper revisions and generated catalog entries;
-- Windows package signing, macOS non-notarized trust disclosure/qualification, and native installation/activation;
-- representative native/offline qualification with the actual production key/catalog; and
+Remaining release work is narrower:
+
+- Windows publisher signing and post-signing exact-artifact evidence;
+- macOS non-notarized disclosure plus representative Gatekeeper/first-launch qualification;
+- the remaining platform-specific update activation/replacement/restart/recovery qualification;
+- representative native/offline device evidence using the actual production key/catalog;
+- final #175 release publication; and
 - resolution of the separate upstream Linux dependency gate before calling Linux packaging production-ready.
 
-Those are real release inputs and qualification evidence. They are not replaced by placeholder keys, guessed hashes, synthetic test fixtures, or browser mocks.
+Those remaining gates are real release evidence. They are not replaced by placeholder keys, guessed hashes, synthetic test fixtures, browser mocks, or hosted CI where representative hardware behavior is required.
