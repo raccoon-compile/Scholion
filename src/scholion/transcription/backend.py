@@ -53,7 +53,7 @@ class FasterWhisperSession:
             language = FasterWhisperTranscriber._optional_text(
                 getattr(info, "language", None)
             )
-            language_probability = FasterWhisperTranscriber._optional_probability(
+            language_probability = FasterWhisperTranscriber._optional_float(
                 getattr(info, "language_probability", None)
             )
             segments = FasterWhisperTranscriber._segments(
@@ -149,21 +149,44 @@ class FasterWhisperTranscriber:
             if not text:
                 continue
             try:
+                start_seconds = float(raw.start)
+                end_seconds = float(raw.end)
+                if (
+                    not math.isfinite(start_seconds)
+                    or not math.isfinite(end_seconds)
+                    or start_seconds < 0
+                    or end_seconds < start_seconds
+                ):
+                    raise ValueError(
+                        "segment timestamps must be finite, nonnegative, and ordered"
+                    )
+
+                words = cls._words(getattr(raw, "words", None))
+                if words:
+                    start_seconds = min(
+                        start_seconds,
+                        min(word.start_seconds for word in words),
+                    )
+                    end_seconds = max(
+                        end_seconds,
+                        max(word.end_seconds for word in words),
+                    )
+
                 recognized.append(
                     AlignedRecognizedSegment(
                         index=len(recognized),
-                        start_seconds=float(raw.start),
-                        end_seconds=float(raw.end),
+                        start_seconds=start_seconds,
+                        end_seconds=end_seconds,
                         text=text,
                         average_log_probability=cls._optional_float(
                             getattr(raw, "avg_logprob", None)
                         ),
-                        no_speech_probability=cls._optional_probability(
+                        no_speech_probability=cls._optional_float(
                             getattr(raw, "no_speech_prob", None)
                         ),
                         detected_language=detected_language,
                         language_probability=language_probability,
-                        words=cls._words(getattr(raw, "words", None)),
+                        words=words,
                     )
                 )
             except (AttributeError, TypeError) as exc:
@@ -211,7 +234,7 @@ class FasterWhisperTranscriber:
                     start_seconds=float(raw.start),
                     end_seconds=float(raw.end),
                     text=text,
-                    probability=cls._optional_probability(
+                    probability=cls._optional_float(
                         getattr(raw, "probability", None)
                     ),
                 )
@@ -230,18 +253,8 @@ class FasterWhisperTranscriber:
         if value is None:
             return None
         try:
-            parsed = float(str(value))
+            return float(str(value))
         except (TypeError, ValueError) as exc:
             raise TranscriptionError(
                 "The transcription engine returned invalid probability data", cause=exc
             ) from exc
-        return parsed if math.isfinite(parsed) else None
-
-    @classmethod
-    def _optional_probability(cls, value: object) -> float | None:
-        parsed = cls._optional_float(value)
-        if parsed is None:
-            return None
-        if 0 <= parsed <= 1:
-            return parsed
-        return None
