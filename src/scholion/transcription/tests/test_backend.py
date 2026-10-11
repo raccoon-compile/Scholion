@@ -293,7 +293,9 @@ def test_segment_envelope_expands_to_preserve_aligned_word_evidence(tmp_path):
 
     assert observed.start_seconds == 0.25
     assert observed.end_seconds == 1.25
-    assert [(item.start_seconds, item.end_seconds) for item in aligned_words(observed)] == [
+    assert [
+        (item.start_seconds, item.end_seconds) for item in aligned_words(observed)
+    ] == [
         (0.25, 0.7),
         (0.7, 1.25),
     ]
