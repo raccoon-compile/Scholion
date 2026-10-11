@@ -229,16 +229,33 @@ def test_engine_iteration_failure_is_redacted(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "bad_segment",
+    ("bad_segment", "expected_message"),
     [
-        SimpleNamespace(text="words", start="bad", end=1, words=None),
-        SimpleNamespace(text="words", start=2, end=1, words=None),
-        segment(words=(word(-1, 0.5, "bad"),)),
-        segment(words=(word(0.0, 1.1, "bad"),)),
-        segment(words=(word(0.0, 0.5, "one"), word(0.4, 0.8, "two"))),
+        (
+            SimpleNamespace(text="words", start="bad", end=1, words=None),
+            "The transcription engine violated Scholion's typed segment invariant contract",
+        ),
+        (
+            SimpleNamespace(text="words", start=2, end=1, words=None),
+            "The transcription engine violated Scholion's segment timing contract",
+        ),
+        (
+            segment(words=(word(-1, 0.5, "bad"),)),
+            "The transcription engine violated Scholion's word timing contract",
+        ),
+        (
+            segment(words=(word(0.0, 1.1, "bad"),)),
+            "The transcription engine violated Scholion's word timing contract",
+        ),
+        (
+            segment(words=(word(0.0, 0.5, "one"), word(0.4, 0.8, "two"))),
+            "The transcription engine violated Scholion's word timing contract",
+        ),
     ],
 )
-def test_invalid_engine_segment_or_word_values_are_typed(tmp_path, bad_segment):
+def test_invalid_engine_segment_or_word_values_are_typed(
+    tmp_path, bad_segment, expected_message
+):
     class Model:
         def __init__(self, *_args, **_kwargs):
             pass
@@ -249,11 +266,10 @@ def test_invalid_engine_segment_or_word_values_are_typed(tmp_path, bad_segment):
             )
 
     session = backend(Model).open_session(configuration(tmp_path))
-    with pytest.raises(
-        TranscriptionError,
-        match="^The transcription engine returned invalid segment data$",
-    ):
+    with pytest.raises(TranscriptionError) as error:
         session.transcribe(tmp_path / "audio.wav")
+    assert str(error.value) == expected_message
+    assert "bad" not in str(error.value)
 
 
 def test_non_finite_optional_confidences_are_recorded_as_unavailable(tmp_path):
