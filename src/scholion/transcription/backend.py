@@ -1,4 +1,5 @@
 from collections.abc import Callable, Iterable
+import math
 from importlib import import_module, metadata
 from pathlib import Path
 from typing import Any
@@ -52,7 +53,7 @@ class FasterWhisperSession:
             language = FasterWhisperTranscriber._optional_text(
                 getattr(info, "language", None)
             )
-            language_probability = FasterWhisperTranscriber._optional_float(
+            language_probability = FasterWhisperTranscriber._optional_probability(
                 getattr(info, "language_probability", None)
             )
             segments = FasterWhisperTranscriber._segments(
@@ -157,7 +158,7 @@ class FasterWhisperTranscriber:
                         average_log_probability=cls._optional_float(
                             getattr(raw, "avg_logprob", None)
                         ),
-                        no_speech_probability=cls._optional_float(
+                        no_speech_probability=cls._optional_probability(
                             getattr(raw, "no_speech_prob", None)
                         ),
                         detected_language=detected_language,
@@ -185,7 +186,9 @@ class FasterWhisperTranscriber:
                     start_seconds=float(raw.start),
                     end_seconds=float(raw.end),
                     text=text,
-                    probability=cls._optional_float(getattr(raw, "probability", None)),
+                    probability=cls._optional_probability(
+                        getattr(raw, "probability", None)
+                    ),
                 )
             )
         return tuple(words)
@@ -202,8 +205,18 @@ class FasterWhisperTranscriber:
         if value is None:
             return None
         try:
-            return float(str(value))
+            parsed = float(str(value))
         except (TypeError, ValueError) as exc:
             raise TranscriptionError(
                 "The transcription engine returned invalid probability data", cause=exc
             ) from exc
+        return parsed if math.isfinite(parsed) else None
+
+    @classmethod
+    def _optional_probability(cls, value: object) -> float | None:
+        parsed = cls._optional_float(value)
+        if parsed is None:
+            return None
+        if 0 <= parsed <= 1:
+            return parsed
+        return None
