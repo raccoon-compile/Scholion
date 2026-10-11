@@ -256,6 +256,50 @@ def test_invalid_engine_segment_or_word_values_are_typed(tmp_path, bad_segment):
         session.transcribe(tmp_path / "audio.wav")
 
 
+def test_non_finite_optional_confidences_are_recorded_as_unavailable(tmp_path):
+    class Model:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def transcribe(self, *_args, **_kwargs):
+            return iter(
+                (
+                    segment(
+                        avg=float("nan"),
+                        no_speech=1.5,
+                        words=(word(probability=float("nan")),),
+                    ),
+                )
+            ), SimpleNamespace(language="en", language_probability=float("inf"))
+
+    session = backend(Model).open_session(configuration(tmp_path))
+    result = session.transcribe(tmp_path / "audio.wav")
+
+    assert result.language_probability is None
+    assert result.segments[0].average_log_probability is None
+    assert result.segments[0].no_speech_probability is None
+    assert aligned_words(result.segments[0])[0].probability is None
+
+
+def test_out_of_range_optional_word_probability_does_not_invalidate_text(tmp_path):
+    class Model:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def transcribe(self, *_args, **_kwargs):
+            return iter(
+                (
+                    segment(words=(word(probability=1.000001),)),
+                )
+            ), SimpleNamespace(language="en", language_probability=1.0)
+
+    session = backend(Model).open_session(configuration(tmp_path))
+    result = session.transcribe(tmp_path / "audio.wav")
+
+    assert result.segments[0].text == "hello"
+    assert aligned_words(result.segments[0])[0].probability is None
+
+
 def test_invalid_language_probability_is_typed_without_native_detail(tmp_path):
     class Model:
         def __init__(self, *_args, **_kwargs):
