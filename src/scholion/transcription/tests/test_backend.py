@@ -241,15 +241,15 @@ def test_engine_iteration_failure_is_redacted(tmp_path):
         ),
         (
             segment(words=(word(-1, 0.5, "bad"),)),
-            "The transcription engine violated Scholion's word timing contract",
+            "The transcription engine violated Scholion's invalid word interval contract",
         ),
         (
             segment(words=(word(0.0, 1.1, "bad"),)),
-            "The transcription engine violated Scholion's word timing contract",
+            "The transcription engine violated Scholion's word ends after segment contract",
         ),
         (
             segment(words=(word(0.0, 0.5, "one"), word(0.4, 0.8, "two"))),
-            "The transcription engine violated Scholion's word timing contract",
+            "The transcription engine violated Scholion's word overlap/order contract",
         ),
     ],
 )
