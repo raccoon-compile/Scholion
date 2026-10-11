@@ -1,5 +1,5 @@
-from collections.abc import Callable, Iterable
 import math
+from collections.abc import Callable, Iterable
 from importlib import import_module, metadata
 from pathlib import Path
 from typing import Any
@@ -181,9 +181,9 @@ class FasterWhisperTranscriber:
                     category = "word timing"
                 elif message.startswith("word probability"):
                     category = "word confidence"
-                elif message.startswith("average_log_probability"):
-                    category = "segment confidence"
-                elif message.startswith("no_speech_probability"):
+                elif message.startswith(
+                    ("average_log_probability", "no_speech_probability")
+                ):
                     category = "segment confidence"
                 else:
                     category = "typed segment invariant"
