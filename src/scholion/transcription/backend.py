@@ -218,7 +218,9 @@ class FasterWhisperTranscriber:
             or start_seconds < 0
             or end_seconds < start_seconds
         ):
-            raise ValueError("segment timestamps must be finite, nonnegative, and ordered")
+            raise ValueError(
+                "segment timestamps must be finite, nonnegative, and ordered"
+            )
         return start_seconds, end_seconds
 
     @staticmethod
@@ -257,9 +259,7 @@ class FasterWhisperTranscriber:
                     start_seconds=float(raw.start),
                     end_seconds=float(raw.end),
                     text=text,
-                    probability=cls._optional_float(
-                        getattr(raw, "probability", None)
-                    ),
+                    probability=cls._optional_float(getattr(raw, "probability", None)),
                 )
             )
         return tuple(words)
