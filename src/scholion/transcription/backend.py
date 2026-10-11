@@ -166,9 +166,30 @@ class FasterWhisperTranscriber:
                         words=cls._words(getattr(raw, "words", None)),
                     )
                 )
-            except (AttributeError, TypeError, ValueError) as exc:
+            except (AttributeError, TypeError) as exc:
                 raise TranscriptionError(
-                    "The transcription engine returned invalid segment data", cause=exc
+                    "The transcription engine returned malformed required segment data",
+                    cause=exc,
+                ) from exc
+            except ValueError as exc:
+                message = str(exc)
+                if message.startswith("segment timestamps"):
+                    category = "segment timing"
+                elif message.startswith("word timestamp") or message.startswith(
+                    "word timestamps"
+                ):
+                    category = "word timing"
+                elif message.startswith("word probability"):
+                    category = "word confidence"
+                elif message.startswith("average_log_probability"):
+                    category = "segment confidence"
+                elif message.startswith("no_speech_probability"):
+                    category = "segment confidence"
+                else:
+                    category = "typed segment invariant"
+                raise TranscriptionError(
+                    f"The transcription engine violated Scholion's {category} contract",
+                    cause=exc,
                 ) from exc
         return tuple(recognized)
 
