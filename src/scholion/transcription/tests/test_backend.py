@@ -304,9 +304,7 @@ def test_out_of_range_optional_word_probability_does_not_invalidate_text(tmp_pat
 
         def transcribe(self, *_args, **_kwargs):
             return iter(
-                (
-                    segment(words=(word(probability=1.000001),)),
-                )
+                (segment(words=(word(probability=1.000001),)),)
             ), SimpleNamespace(language="en", language_probability=1.0)
 
     session = backend(Model).open_session(configuration(tmp_path))
