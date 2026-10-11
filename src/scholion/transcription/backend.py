@@ -175,10 +175,14 @@ class FasterWhisperTranscriber:
                 message = str(exc)
                 if message.startswith("segment timestamps"):
                     category = "segment timing"
-                elif message.startswith("word timestamp") or message.startswith(
-                    "word timestamps"
-                ):
-                    category = "word timing"
+                elif message == "word timestamp starts before its segment":
+                    category = "word starts before segment"
+                elif message == "word timestamp ends after its segment":
+                    category = "word ends after segment"
+                elif message == "word timestamps must be ordered and non-overlapping":
+                    category = "word overlap/order"
+                elif message == "word timestamps must be finite and ordered":
+                    category = "invalid word interval"
                 elif message.startswith("word probability"):
                     category = "word confidence"
                 elif message.startswith(
