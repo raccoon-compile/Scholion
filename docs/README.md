@@ -49,7 +49,7 @@ Model installation is explicit. Scholion records the immutable provider revision
 
 The stronger project-policy layer is also implemented now. When a reviewed model-trust catalog ships inside a Scholion release, installation requests the exact approved upstream revision and the complete downloaded file set, sizes, and SHA-256 values must match before that model can be called **trusted by this Scholion build**. Legacy locally valid models can remain visible/removable without being admitted for new transcription under enforcement.
 
-What does **not** exist yet is a guessed production catalog. Real faster-whisper revisions, licenses, file sets, and regression behavior must be reviewed deliberately before generated trust entries are bundled. Hugging Face remains transport, not the trust authority.
+The reviewed first-release production catalog now exists. Scholion pins immutable `tiny`, `small`, and `medium` faster-whisper revisions with reviewed license/source metadata and complete file-set/size/SHA-256 evidence. Hugging Face remains transport, not the trust authority, and future catalog changes remain explicit security-sensitive release changes.
 
 See **[Signed update and model trust channel](security/update-model-trust.md)** and **[Production trust inputs](security/production-trust-inputs.md)**.
 
@@ -57,7 +57,7 @@ See **[Signed update and model trust channel](security/update-model-trust.md)** 
 
 Scholion's update UI is manual. It distinguishes Off, Never checked, Checking, Up to date, Trusted update available, Staging/Staged, and bounded failure. Signed metadata must pass key/signature, publication/expiry, stable-channel, platform, anti-rollback, and equivocation checks before it can authorize an artifact. A downloaded artifact must then match the signed byte count and SHA-256 exactly.
 
-A staged package is **not installed**. Strict native Ed25519 verification, deterministic public trust-input custody, the real production public-key catalog, the reviewed model catalog, and production-shaped signed-fixture qualification are complete. Windows code signing, macOS open-source trust disclosure/qualification, and native activation remain separate release gates.
+A staged package is **not installed**. Strict native Ed25519 verification, deterministic public trust-input custody, the real production public-key catalog, the reviewed model catalog, production-shaped signed-fixture qualification, pre-handoff re-verification, and bounded native activation are complete. Windows publisher signing, representative macOS/Windows device behavior, remaining replacement/restart/recovery qualification, and final publication remain release gates.
 
 An update check is network activity, but it is not behavioral telemetry. GitHub/CDN can observe ordinary connection metadata such as IP address and request time. Scholion does not send an installation ID, corpus/research content, hardware/model inventory, or product-behavior data.
 
@@ -122,7 +122,7 @@ Research/search, Processing, desktop comprehension/themes, transcript/speaker to
 
 Research uses ordinary product language by default. Processing presents backend planning/admission rather than duplicating it. Multi-track selection is backend-required and backend-replanned. Transcript tools pass exact generation identity into Python for details, speaker mutation, and publication. Playback does the same for source authorization, then Rust owns an opaque opened-file session.
 
-Storage follows the same rule: React sends typed lifecycle intent and renders a plan calculated by application authority; Python recalculates at apply time and refuses stale confirmation. Updates likewise exposes only status/check/stage plus a no-parameter pre-installation re-verification intent while application code owns endpoint, platform, trust state, staged path, and artifact selection.
+Storage follows the same rule: React sends typed lifecycle intent and renders a plan calculated by application authority; Python recalculates at apply time and refuses stale confirmation. Updates likewise exposes only status/check/stage, a no-parameter pre-installation re-verification, and one zero-argument native handoff while application/native code owns endpoint, platform, trust state, staged path, artifact selection, and installer execution policy.
 
 The architecture/redundancy audit remains closed after a post-#144 re-audit. The only new duplicate authority found was update-service construction inside the adapter, now moved back to application-layer composition. Duplicate supply-chain file hashing was also consolidated. The update bridge itself remains separate because network/trust/staging authority is not the same capability as ordinary desktop, playback, custody, or supervised Processing work.
 
@@ -132,9 +132,9 @@ The Scholion identity migration, application-side update/model-trust mechanics, 
 
 The remaining first-release sequence is intentionally narrow:
 
-1. **Platform distribution trust (#173):** sign Windows package bytes and qualify the macOS non-Apple-notarized open-source distribution path now that #168 has qualified the real production trust inputs and production-key update signature;
-2. **Native update activation (#174):** re-verify and eventually execute only an already project-trusted staged candidate while enforcing each platform's applicable trust policy; staging/readiness remain distinct from installation;
-3. **Representative release qualification (#114):** exercise real packaged CPU-only/accelerator/Apple/Windows behavior, offline/update/repair/lifecycle cases, accessibility/device behavior, and the remaining native task-transport evidence; and
+1. **Platform distribution trust (#173):** complete Windows publisher signing and representative macOS open-source distribution/Gatekeeper evidence;
+2. **Native update activation (#174):** close the remaining Windows publisher-verification/launch and representative replacement/restart/recovery qualification around the already-implemented bounded handoff;
+3. **Representative Processing qualification (#114):** exercise the real native Processing transport on a CPU-only class and a supported-accelerator class, while #173/#174 own platform-specific Windows/macOS release behavior; and
 4. **MVP release (#175):** publish the final candidate with checksums, deterministic provenance, SBOM material, signatures, and qualification evidence bound to the same bytes.
 
 Official Linux binary packaging remains blocked by #135. Backup/restore + selected research portability, packaged semantic custody, and broader research-native features remain useful **post-MVP** work rather than reasons to hold the first Windows/macOS release hostage.
