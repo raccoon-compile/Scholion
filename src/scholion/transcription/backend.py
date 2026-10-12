@@ -1,3 +1,4 @@
+import math
 from collections.abc import Callable, Iterable
 from importlib import import_module, metadata
 from pathlib import Path
@@ -147,29 +148,102 @@ class FasterWhisperTranscriber:
             text = str(getattr(raw, "text", "")).strip()
             if not text:
                 continue
-            try:
-                recognized.append(
-                    AlignedRecognizedSegment(
-                        index=len(recognized),
-                        start_seconds=float(raw.start),
-                        end_seconds=float(raw.end),
-                        text=text,
-                        average_log_probability=cls._optional_float(
-                            getattr(raw, "avg_logprob", None)
-                        ),
-                        no_speech_probability=cls._optional_float(
-                            getattr(raw, "no_speech_prob", None)
-                        ),
-                        detected_language=detected_language,
-                        language_probability=language_probability,
-                        words=cls._words(getattr(raw, "words", None)),
-                    )
+            recognized.append(
+                cls._aligned_segment(
+                    raw,
+                    index=len(recognized),
+                    text=text,
+                    detected_language=detected_language,
+                    language_probability=language_probability,
                 )
-            except (AttributeError, TypeError, ValueError) as exc:
-                raise TranscriptionError(
-                    "The transcription engine returned invalid segment data", cause=exc
-                ) from exc
+            )
         return tuple(recognized)
+
+    @classmethod
+    def _aligned_segment(
+        cls,
+        raw: Any,
+        *,
+        index: int,
+        text: str,
+        detected_language: str | None,
+        language_probability: float | None,
+    ) -> AlignedRecognizedSegment:
+        try:
+            start_seconds, end_seconds = cls._raw_segment_bounds(raw)
+            words = cls._words(getattr(raw, "words", None))
+            if words:
+                start_seconds = min(
+                    start_seconds,
+                    min(word.start_seconds for word in words),
+                )
+                end_seconds = max(
+                    end_seconds,
+                    max(word.end_seconds for word in words),
+                )
+            return AlignedRecognizedSegment(
+                index=index,
+                start_seconds=start_seconds,
+                end_seconds=end_seconds,
+                text=text,
+                average_log_probability=cls._optional_float(
+                    getattr(raw, "avg_logprob", None)
+                ),
+                no_speech_probability=cls._optional_float(
+                    getattr(raw, "no_speech_prob", None)
+                ),
+                detected_language=detected_language,
+                language_probability=language_probability,
+                words=words,
+            )
+        except (AttributeError, TypeError) as exc:
+            raise TranscriptionError(
+                "The transcription engine returned malformed required segment data",
+                cause=exc,
+            ) from exc
+        except ValueError as exc:
+            category = cls._segment_validation_category(str(exc))
+            raise TranscriptionError(
+                f"The transcription engine violated Scholion's {category} contract",
+                cause=exc,
+            ) from exc
+
+    @staticmethod
+    def _raw_segment_bounds(raw: Any) -> tuple[float, float]:
+        start_seconds = float(raw.start)
+        end_seconds = float(raw.end)
+        if (
+            not math.isfinite(start_seconds)
+            or not math.isfinite(end_seconds)
+            or start_seconds < 0
+            or end_seconds < start_seconds
+        ):
+            raise ValueError(
+                "segment timestamps must be finite, nonnegative, and ordered"
+            )
+        return start_seconds, end_seconds
+
+    @staticmethod
+    def _segment_validation_category(message: str) -> str:
+        exact_categories = {
+            "word timestamp starts before its segment": "word starts before segment",
+            "word timestamp ends after its segment": "word ends after segment",
+            "word timestamps must be ordered and non-overlapping": "word overlap/order",
+            "word timestamps must be finite and ordered": "invalid word interval",
+        }
+        category = exact_categories.get(message)
+        if category is not None:
+            return category
+        prefix_categories = (
+            ("segment timestamps", "segment timing"),
+            ("word probability", "word confidence"),
+            ("average_log_probability", "segment confidence"),
+            ("no_speech_probability", "segment confidence"),
+        )
+        for prefix, candidate in prefix_categories:
+            if message.startswith(prefix):
+                return candidate
+        return "typed segment invariant"
 
     @classmethod
     def _words(cls, raw_words: Iterable[Any] | None) -> tuple[AlignedWord, ...]:
