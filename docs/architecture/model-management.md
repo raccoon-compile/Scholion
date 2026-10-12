@@ -28,9 +28,10 @@ development build with no packaged catalog retains the existing local/provider
 revalidation path. There is no second runtime switch that can silently ship a catalog
 while leaving it unenforced.
 
-The repository still does **not** contain a production faster-whisper trust catalog. Real
-entries must come from deliberate review of immutable upstream snapshots; tests use only
-synthetic revisions and bytes.
+The repository now contains the reviewed first-release faster-whisper trust catalog.
+`packaging/release-trust/model-trust.json` pins immutable `tiny`, `small`, and
+`medium` snapshots with complete file-set/size/SHA-256 evidence. Synthetic fixtures
+remain test-only and do not confer production trust.
 
 ## Why Scholion does not just trust whatever is in a cache
 
@@ -148,9 +149,11 @@ enables the stricter transaction automatically:
 With policy enforcement active, a missing catalog entry or a managed snapshot without
 current policy evidence cannot be admitted to a **new transcription**.
 
-This mechanism does not manufacture the production policy. The real faster-whisper
-entries still require deliberate upstream review and must ship as part of a signed
-Scholion release.
+This mechanism does not manufacture production policy. Scholion's reviewed first-release
+policy now pins immutable `tiny`, `small`, and `medium` faster-whisper snapshots in
+`packaging/release-trust/model-trust.json`, with complete file-set/size/SHA-256 evidence.
+Changing those entries remains a security-sensitive review decision and ships only as part
+of a signed Scholion release.
 
 ## Upgrading from a locally revalidated model to policy enforcement
 
@@ -260,9 +263,10 @@ could reasonably infer the stronger claim.
 
 The stronger path is now integrated through installation, manifest custody, application
 composition, new-transcription admission, Processing Center readiness, and migration UX.
-The remaining model-side production task is release content: deliberately review real
-upstream faster-whisper revisions, generate the exact curated catalog, include it in a
-signed release, and qualify those pinned bytes on supported release platforms.
+The reviewed first-release `tiny` / `small` / `medium` catalog and production-shaped
+Windows/macOS qualification are complete. Remaining release work is to preserve that
+exact policy through final artifact publication and representative-device evidence, not
+to invent or re-review the catalog from scratch.
 
 See **[Signed update and model trust channel](../security/update-model-trust.md)** for the
 full trust model and privacy boundary.
@@ -392,12 +396,12 @@ Model management does not currently provide:
 - automatic/background model updates;
 - adoption of arbitrary cache entries;
 - generic arbitrary model hubs;
-- model quota/garbage-collection policy;
-- hosted inventory/telemetry; or
-- a reviewed production faster-whisper policy catalog bundled into application releases.
+- model quota/garbage-collection policy; or
+- hosted inventory/telemetry.
 
-The last item is intentionally not represented by placeholder hashes. A release becomes
-policy-enforced only when reviewed trust content is actually packaged.
+The reviewed first-release faster-whisper policy is now committed and package-qualified.
+Future catalog changes remain explicit, security-sensitive release changes rather than
+ambient model updates.
 
 The stable rule is:
 

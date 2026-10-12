@@ -63,7 +63,7 @@ The consumer explanation stays consequence-first: models download only when the 
 
 Scholion's stronger model-policy machinery is now implemented. When a reviewed catalog is bundled, the exact approved upstream revision plus the complete allowed file set, byte sizes, and SHA-256 values must match before a model is trusted by that Scholion build and admitted for new transcription. Legacy locally valid models remain visible/removable without becoming policy-trusted automatically.
 
-The repository intentionally contains no guessed production faster-whisper entries. Real revision/license selection and generated catalog review follow **[Production trust inputs](../security/production-trust-inputs.md)** and are later release inputs. See **[Signed update and model trust channel](../security/update-model-trust.md)** for the implemented policy mechanics.
+The reviewed first-release faster-whisper policy is now committed and package-qualified. It pins immutable `tiny`, `small`, and `medium` revisions with reviewed source/license metadata and exact file-set/size/SHA-256 evidence. Future model-policy changes remain explicit security-sensitive release changes. See **[Production trust inputs](../security/production-trust-inputs.md)** and **[Signed update and model trust channel](../security/update-model-trust.md)** for the custody and qualification contract.
 
 Optional diarization keeps its network/dependency boundary separate from transcription-model custody. Processing asks Python for a read-only speaker-labeling capability state before offering the option. If the optional runtime is missing, unverifiable, or security-held, the control is disabled with a safe reason rather than inviting a task the backend is guaranteed to reject.
 
