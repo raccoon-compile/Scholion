@@ -64,7 +64,7 @@ test("transcript reader playback and speaker tools carry help at the point of us
   await expect(page.getByText(/Recordings with multiple audio tracks are not played automatically yet/)).toBeVisible();
 
   await reader.getByRole("button", { name: "Close", exact: true }).click();
-  await page.getByRole("button", { name: /Open speaker and export tools for interview-42/ }).click();
+  await page.getByRole("button", { name: /Speaker & export tools for interview-42/ }).click();
   const tools = page.getByRole("complementary", { name: "Transcript tools" });
   await tools.getByRole("button", { name: "How these work" }).click();
   await expect(
