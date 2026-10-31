@@ -6,7 +6,7 @@ async function openTranscriptTools(page: import("@playwright/test").Page) {
   await page.getByRole("button", { name: "Library" }).click();
   await page.getByRole("searchbox", { name: "Search Scholion" }).fill("ABC");
   await page.getByRole("button", { name: "Search", exact: true }).click();
-  await page.getByRole("button", { name: "Open speaker and export tools for interview-42" }).click();
+  await page.getByRole("button", { name: "Speaker & export tools for interview-42" }).click();
   const panel = page.getByRole("complementary", { name: "Transcript tools" });
   await expect(panel.getByRole("heading", { name: "interview-42" })).toBeVisible();
   return panel;

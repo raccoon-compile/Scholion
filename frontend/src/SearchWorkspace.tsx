@@ -209,7 +209,7 @@ export function SearchWorkspace({
                       <button
                         type="button"
                         className="secondary-action"
-                        aria-label={`Open speaker and export tools for ${item.document_id}`}
+                        aria-label={`Speaker & export tools for ${item.document_id}`}
                         onClick={() => openTools(item)}
                       >
                         Speaker & export tools
