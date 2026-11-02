@@ -131,7 +131,7 @@ jobs:
       # independent advisory backstop for the Python and npm lockfiles rather
       # than converting those RustSec informational findings into hard failures.
       - name: Cross-check Python and frontend locked graphs against OSV
-        uses: google/osv-scanner-action/osv-scanner-action@8ac9e5ce44cc7178e0e04229a91bdcc003166e57 # v2.5.1
+        uses: google/osv-scanner-action/osv-scanner-action@9a96bc4d2b09685b6142bcfe25a3dc17cb2d7347 # v2.5.1
         with:
           scan-args: |-
             --config=./osv-scanner.toml
